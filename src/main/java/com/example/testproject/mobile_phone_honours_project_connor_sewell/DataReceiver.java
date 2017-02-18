@@ -3,8 +3,12 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -14,17 +18,15 @@ import java.net.Socket;
  * Code for networking taken from: https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
  * ^ Accessed: 10/02/2017 @ 01:29
  */
-public class ConnectionManager extends AsyncTask<Void, Void, String>
+public class DataReceiver extends AsyncTask<Void, Void, String>
 {
     Context context;
 
-    public ConnectionManager(Context context)
+    public DataReceiver(Context context)
     {
         this.context = context;
     }
 
-    //Returns "CannotConnect" when connection establish failed
-    //Returns "StreamEnded"  when streaming fails/ends for whatever reason
     @Override
     protected String doInBackground(Void... params)
     {
@@ -32,36 +34,23 @@ public class ConnectionManager extends AsyncTask<Void, Void, String>
         Socket client;
         InputStream inputStream;
 
-        //Need to update statements to catch exact errors
         try
         {
+            Log.i("Connection State: ", "Waiting for connection...");
             sv = new ServerSocket(8888);
             client = sv.accept();
-            inputStream = client.getInputStream();
-        }
-        catch(Exception e)
-        {
-            return "CannotConnect";
-        }
-
-        try
-        {
-            //Receive input streams, then close stream.
-
+            InputStream is = client.getInputStream();
             sv.close();
         }
-        catch(Exception e)
-        {
-            return "StreamInterrupted";
-        }
+        catch(Exception e) {return e.toString();}
 
-        //Return if stream ended
-        return "StreamEnded";
+        return "Transaction Complete";
     }
 
     @Override
     protected void onPostExecute(String exitResult)
     {
-
+        System.out.println("Connection result: " + exitResult);
+        Toast.makeText(context,"Result: " + exitResult, Toast.LENGTH_LONG).show();
     }
 }
