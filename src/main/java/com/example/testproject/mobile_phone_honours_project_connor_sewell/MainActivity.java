@@ -31,9 +31,12 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
+       // mIntentFilter.addAction(WifiP2pManager.STATE)
 
         //new DataReceiver(this).execute();
     }
+
 
     @Override
     protected void onResume()

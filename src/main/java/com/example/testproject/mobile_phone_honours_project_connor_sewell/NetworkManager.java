@@ -3,6 +3,8 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -44,7 +46,7 @@ public class NetworkManager extends BroadcastReceiver
             @Override
             public void onFailure(int reasonCode) {
                 Log.e(errorLogTag, "Failed. Reason Code = " + String.valueOf(reasonCode));
-            }
+           }
         });
     }
 
@@ -63,7 +65,8 @@ public class NetworkManager extends BroadcastReceiver
         }
         else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action))
         {
-            if(config.deviceAddress!=null)
+            NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+            if(networkInfo.isConnected())
             {
                 //Taken from: http://stackoverflow.com/questions/15621247/wifi-direct-group-owner-address
                 //^ Accessed: 12/02/2017 @ 22:40
@@ -75,8 +78,10 @@ public class NetworkManager extends BroadcastReceiver
                             {
                                 InetAddress groupOwnerAddress = info.groupOwnerAddress;
                                 String hostIP = groupOwnerAddress.getHostAddress();
+                               // Boolean group = info.isGroupOwner;
+                               // Log.i("Group owner? ", group.toString());
                                 Log.i(infoLogTag, hostIP);
-                                new DataSender(hostIP);
+                                new DataSender(hostIP).execute();
                             }
                         });
             }

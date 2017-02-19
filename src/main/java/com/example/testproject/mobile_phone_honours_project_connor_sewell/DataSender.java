@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,33 +18,40 @@ import java.net.Socket;
  * ^ For all network related code. Accessed: 10/02/2017 @ 03:00
  */
 
-public class DataSender {
+public class DataSender extends AsyncTask<Void, Void, String> {
     Socket socket;
     String ip;
 
-    public DataSender(String ip)
-    {
+    public DataSender(String ip) {
         this.ip = ip;
         socket = new Socket();
-        sendData();
     }
 
-    private void sendData()
-    {
-        try
-        {
+    @Override
+    protected String doInBackground(Void... params) {
+        try {
             socket.bind(null);
-            socket.connect((new InetSocketAddress(ip, 7777)), 1000);
             Log.i("Success: ", "Connected to server!");
+            socket.connect((new InetSocketAddress(ip, 8888)), 1000);
             OutputStream os = socket.getOutputStream();
             PrintWriter out = new PrintWriter(os);
             out.flush();
             out.close();
             socket.close();
-        } catch (IOException e) {Log.e("Error: ", e.toString());}
+        } catch (Exception e)
+        {
+            Log.e("Error: ", e.toString());
+        }
 
-        try {if (socket.isConnected()) {socket.close();}}
-        catch(IOException e) {Log.e("Error: ", e.toString());}
+        try {
+            if (socket.isConnected()) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            Log.e("Error: ", e.toString());
+        }
+
+        return null;
     }
-}
 
+}
