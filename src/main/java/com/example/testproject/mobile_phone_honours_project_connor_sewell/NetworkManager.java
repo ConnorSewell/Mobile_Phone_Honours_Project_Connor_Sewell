@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -78,14 +79,11 @@ public class NetworkManager extends BroadcastReceiver
                             {
                                 InetAddress groupOwnerAddress = info.groupOwnerAddress;
                                 String hostIP = groupOwnerAddress.getHostAddress();
-                               // Boolean group = info.isGroupOwner;
-                               // Log.i("Group owner? ", group.toString());
                                 Log.i(infoLogTag, hostIP);
                                 new DataSender(hostIP).execute();
                             }
                         });
             }
-
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action))
         {
             Log.i("Info: ", action);
@@ -114,6 +112,7 @@ public class NetworkManager extends BroadcastReceiver
                         WifiP2pDevice device = peers.get(i);
                         config.deviceAddress = device.deviceAddress;
                         config.groupOwnerIntent = 0; //0~15...
+                        config.wps.setup = WpsInfo.PBC;
                         deviceConnected = true;
 
                         mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()

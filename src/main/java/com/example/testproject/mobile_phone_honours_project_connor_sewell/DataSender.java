@@ -32,9 +32,10 @@ public class DataSender extends AsyncTask<Void, Void, String> {
         try {
             socket.bind(null);
             Log.i("Success: ", "Connected to server!");
-            socket.connect((new InetSocketAddress(ip, 8888)), 1000);
+            socket.connect((new InetSocketAddress(ip, 8888)), 10000);
             OutputStream os = socket.getOutputStream();
             PrintWriter out = new PrintWriter(os);
+            out.write("Message");
             out.flush();
             out.close();
             socket.close();
@@ -44,7 +45,8 @@ public class DataSender extends AsyncTask<Void, Void, String> {
         }
 
         try {
-            if (socket.isConnected()) {
+            if (socket.isConnected())
+            {
                 socket.close();
             }
         } catch (IOException e) {
