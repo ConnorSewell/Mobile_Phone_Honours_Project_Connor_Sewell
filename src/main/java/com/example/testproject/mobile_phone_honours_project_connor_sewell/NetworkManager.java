@@ -3,7 +3,6 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -80,7 +79,10 @@ public class NetworkManager extends BroadcastReceiver
                                 InetAddress groupOwnerAddress = info.groupOwnerAddress;
                                 String hostIP = groupOwnerAddress.getHostAddress();
                                 Log.i(infoLogTag, hostIP);
-                                new DataSender(hostIP).execute();
+
+                                ConnectionManager ds = new ConnectionManager(hostIP);
+                                Thread dataSendReceiveThread = new Thread(ds, "Thread One");
+                                dataSendReceiveThread.start();
                             }
                         });
             }

@@ -6,6 +6,7 @@ import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 //https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
 //^Used for network related code (WifiP2pManager, Channel, BroadcastReceiver...). Accessed 08/02/2017 @ 14:55
@@ -32,13 +33,7 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
-
-        //Following same threading reference found in DataReceiver class
-        DataReceiver drn = new DataReceiver(this);
-        Thread receiveDataThread = new Thread(drn, "Thread One");
-        receiveDataThread.start();
     }
-
 
     @Override
     protected void onResume()
