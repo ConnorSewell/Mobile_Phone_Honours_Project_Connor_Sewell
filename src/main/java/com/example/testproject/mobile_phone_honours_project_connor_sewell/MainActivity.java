@@ -7,6 +7,8 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.VideoView;
+
 
 //https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
 //^Used for network related code (WifiP2pManager, Channel, BroadcastReceiver...). Accessed 08/02/2017 @ 14:55
@@ -17,11 +19,17 @@ public class MainActivity extends AppCompatActivity
     BroadcastReceiver mReceiver;
     IntentFilter mIntentFilter;
 
+    private VideoView vd;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //vd = (VideoView) findViewById(R.id.video_view);
+        //vd.setVideoPath(null);
+        //vd.start();
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
@@ -33,6 +41,8 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
+
+
     }
 
     @Override
