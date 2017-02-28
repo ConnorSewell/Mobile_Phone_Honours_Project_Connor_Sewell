@@ -26,7 +26,7 @@ public class NetworkManager extends BroadcastReceiver
 {
     private WifiP2pManager.Channel mChannel;
     private WifiP2pManager mManager;
-    private MainActivity mActivity;
+    final MainActivity mActivity;
     String infoLogTag = "INFO: ";
     String errorLogTag = "ERROR: ";
     WifiP2pConfig config = new WifiP2pConfig();
@@ -36,6 +36,8 @@ public class NetworkManager extends BroadcastReceiver
         this.mManager = manager;
         this.mChannel = channel;
         this.mActivity = mActivity;
+
+        mActivity.testAccessibility();
 
         mManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
             @Override
@@ -79,8 +81,7 @@ public class NetworkManager extends BroadcastReceiver
                                 InetAddress groupOwnerAddress = info.groupOwnerAddress;
                                 String hostIP = groupOwnerAddress.getHostAddress();
                                 Log.i(infoLogTag, hostIP);
-
-                                ConnectionManager ds = new ConnectionManager(hostIP);
+                                ConnectionManager ds = new ConnectionManager(hostIP, mActivity);
                                 Thread dataSendReceiveThread = new Thread(ds, "Thread One");
                                 dataSendReceiveThread.start();
                             }

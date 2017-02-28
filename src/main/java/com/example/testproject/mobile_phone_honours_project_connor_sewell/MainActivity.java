@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,13 +23,15 @@ public class MainActivity extends AppCompatActivity
 
     private VideoView vd;
 
+    int tester;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //vd = (VideoView) findViewById(R.id.video_view);
+        vd = (VideoView) findViewById(R.id.video_view);
         //vd.setVideoPath(null);
         //vd.start();
 
@@ -42,8 +46,12 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
 
-
     }
+
+    public void updateVideo() {}
+    public void updateAccelerometer(){}
+    public void updateGPS(){}
+    public void updateGyroscope(){}
 
     @Override
     protected void onResume()
