@@ -27,17 +27,19 @@ public class NetworkManager extends BroadcastReceiver
     private WifiP2pManager.Channel mChannel;
     private WifiP2pManager mManager;
     final MainActivity mActivity;
+    boolean connected = false;
     String infoLogTag = "INFO: ";
     String errorLogTag = "ERROR: ";
     WifiP2pConfig config = new WifiP2pConfig();
+    Intent intent;
+
+    Thread connectionThread;
 
     public NetworkManager(WifiP2pManager manager, WifiP2pManager.Channel channel, MainActivity mActivity)
     {
         this.mManager = manager;
         this.mChannel = channel;
         this.mActivity = mActivity;
-
-        mActivity.testAccessibility();
 
         mManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
             @Override
@@ -67,11 +69,14 @@ public class NetworkManager extends BroadcastReceiver
         }
         else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action))
         {
+            //Taken parts of below from: http://stackoverflow.com/questions/15621247/wifi-direct-group-owner-address
+            //^ Accessed: 12/02/2017 @ 22:40
             NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
             if(networkInfo.isConnected())
             {
-                //Taken from: http://stackoverflow.com/questions/15621247/wifi-direct-group-owner-address
-                //^ Accessed: 12/02/2017 @ 22:40
+                //connectionThread.interrupt();
+                //connectionThread = null;
+                Log.e("Inside Netowrk info, ", "...");
                 mManager.requestConnectionInfo(mChannel,
                         new WifiP2pManager.ConnectionInfoListener()
                         {
@@ -81,7 +86,7 @@ public class NetworkManager extends BroadcastReceiver
                                 InetAddress groupOwnerAddress = info.groupOwnerAddress;
                                 String hostIP = groupOwnerAddress.getHostAddress();
                                 Log.i(infoLogTag, hostIP);
-                                ConnectionManager ds = new ConnectionManager(hostIP, mActivity);
+                                VideoStreamHandler ds = new VideoStreamHandler(hostIP, mActivity);
                                 Thread dataSendReceiveThread = new Thread(ds, "Thread One");
                                 dataSendReceiveThread.start();
                             }
@@ -118,20 +123,24 @@ public class NetworkManager extends BroadcastReceiver
                         config.wps.setup = WpsInfo.PBC;
                         deviceConnected = true;
 
+                        //ConnectToServer cts = new ConnectToServer(mChannel, config);
+                        //connectionThread = new Thread(cts, "Thread One");
+                        //connectionThread.start();
                         mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()
                         {
                             @Override
                             public void onSuccess()
                             {
-                                Log.i(infoLogTag, "Connection made");
+                                Log.i("INFO", "Connection made");
                             }
 
                             @Override
-                            public void onFailure(int reason)
-                            {
-                                Log.i(infoLogTag, "Failed to connect");
+                            public void onFailure(int reason) {
+                                Log.i("INFO", "Failed to connect");
                             }
                         });
+
+                        }
 
                     }
                 }
@@ -142,7 +151,25 @@ public class NetworkManager extends BroadcastReceiver
                     return;
                 }
             }
-        }
-
     };
+}
+
+class ConnectToServer implements Runnable
+{
+    private WifiP2pManager.Channel mChannel;
+    private WifiP2pManager mManager;
+    WifiP2pConfig config = new WifiP2pConfig();
+    Intent intent;
+
+    public ConnectToServer(WifiP2pManager.Channel mChannel, WifiP2pConfig config)
+    {
+        this.mChannel = mChannel;
+        this.config = config;
+    }
+
+    @Override
+    public void run()
+    {
+
+    }
 }

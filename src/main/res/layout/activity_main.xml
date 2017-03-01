@@ -15,10 +15,11 @@
         android:layout_height="wrap_content"
         android:text="Hello World!" />
 
-    <VideoView
+    <SurfaceView
         android:id="@+id/video_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_weight="1"
         />
+
 </RelativeLayout>
