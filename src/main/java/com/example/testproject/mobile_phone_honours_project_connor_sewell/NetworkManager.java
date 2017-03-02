@@ -86,9 +86,14 @@ public class NetworkManager extends BroadcastReceiver
                                 InetAddress groupOwnerAddress = info.groupOwnerAddress;
                                 String hostIP = groupOwnerAddress.getHostAddress();
                                 Log.i(infoLogTag, hostIP);
-                                VideoStreamHandler ds = new VideoStreamHandler(hostIP, mActivity);
-                                Thread dataSendReceiveThread = new Thread(ds, "Thread One");
-                                dataSendReceiveThread.start();
+
+                                //VideoStreamHandler ds = new VideoStreamHandler(hostIP, mActivity);
+                                //Thread videoSendReceiveThread = new Thread(ds, "Thread: Video");
+                                //videoSendReceiveThread.start();
+
+                                AccelerometerStreamHandler ash = new AccelerometerStreamHandler(hostIP, mActivity);
+                                Thread accelerometerSendReceiveThread = new Thread(ash, "Thread: Accelerometer");
+                                accelerometerSendReceiveThread.start();
                             }
                         });
             }

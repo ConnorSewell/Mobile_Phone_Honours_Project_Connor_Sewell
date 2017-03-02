@@ -3,6 +3,7 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.media.session.MediaController;
@@ -17,18 +18,35 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.VideoView;
 
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
+ *^Used for network related code (WifiP2pManager, Channel, BroadcastReceiver...). Accessed 08/02/2017 @ 14:55
+ *
+ * https://www.youtube.com/watch?v=a20EchSQgpw Referenced 02/03/2017 @ 02:59
+ * ^ AND https://github.com/PhilJay/MPAndroidChart/blob/master/MPChartExample/src/com/xxmassdeveloper/mpchartexample/RealtimeLineChartActivity.java
+ *       ^ Referenced 02/03/2017 @ 03:00 used for all graphing code
+*/
 
-//https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
-//^Used for network related code (WifiP2pManager, Channel, BroadcastReceiver...). Accessed 08/02/2017 @ 14:55
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback
 {
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
     BroadcastReceiver mReceiver;
     IntentFilter mIntentFilter;
+
+    LineChart accelerometerLineChart;
 
     private SurfaceView surfaceView;
     private SurfaceHolder mHolder;
@@ -44,12 +62,15 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        surfaceView = (SurfaceView) findViewById(R.id.video_view);
+        //surfaceView = (SurfaceView) findViewById(R.id.video_view);
         //VideoView vd;
         //vd = (VideoView) findViewById(R.id.video_test);
         //mr = new MediaPlayer();
         //mHolder = surfaceView.getHolder();
         //mHolder.addCallback(this);
+
+        //setUpAccelerometerGraph();
+        setUpAccelerometerGraph();
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
@@ -63,41 +84,111 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
     }
 
+    public void setUpAccelerometerGraph()
+    {
+        accelerometerLineChart = (LineChart) findViewById(R.id.accelerometer_lineGraph);
+        accelerometerLineChart.setScaleEnabled(true);
+        accelerometerLineChart.setPinchZoom(true);
+        accelerometerLineChart.setBackgroundColor(Color.GRAY);
+        accelerometerLineChart.setDescription(null);
+
+        LineData accelerometerData = new LineData();
+        accelerometerData.setValueTextColor(Color.WHITE);
+
+        accelerometerLineChart.setData(accelerometerData);
+
+        Legend accelerometerLegend = accelerometerLineChart.getLegend();
+        accelerometerLegend.setForm(Legend.LegendForm.LINE);
+        accelerometerLegend.setTextColor(Color.WHITE);
+
+        XAxis accelerometerAxisX = accelerometerLineChart.getXAxis();
+        accelerometerAxisX.setTextColor(Color.WHITE);
+        accelerometerAxisX.setAvoidFirstLastClipping(true);
+
+        YAxis accelerometerAxisYLeft = accelerometerLineChart.getAxisLeft();
+        accelerometerAxisYLeft.setTextColor(Color.WHITE);
+        //accelerometerAxisYLeft.setAxisMaximum(3.f);
+
+        YAxis accelerometerAxisYRight = accelerometerLineChart.getAxisRight();
+        accelerometerAxisYRight.setEnabled(false);
+    }
+
+
+    float x;
+    float y;
+    float z;
+    long time;
+    int counter = 0;
+
+    public void updateAccelerometer(String inputLine)
+    {
+        String[] values = inputLine.split(",");
+        x = Float.parseFloat(values[0]);
+        y = Float.parseFloat(values[1]);
+        z = Float.parseFloat(values[2]);
+        time = Long.parseLong(values[3]);
+       // counter++;
+        LineData data = accelerometerLineChart.getData();
+
+        if(data != null)
+        {
+            ILineDataSet set = data.getDataSetByIndex(0);
+
+            if(set == null)
+            {
+                set = createSet();
+                data.addDataSet(set);
+            }
+
+            Log.i("Time: ", String.valueOf(time));
+            Log.i("X: ", String.valueOf(x));
+
+            data.addEntry(new Entry(set.getEntryCount(), x), 0);
+            //data.addEntry(new Entry(set.getEntryCount(), (float) (Math.random() * 40) + 30f), 0);
+            data.notifyDataChanged();
+            accelerometerLineChart.notifyDataSetChanged();
+            accelerometerLineChart.setVisibleXRangeMaximum(50);
+            accelerometerLineChart.moveViewToX(data.getEntryCount());
+        }
+    }
+
+    private LineDataSet createSet()
+    {
+        LineDataSet set = new LineDataSet(null, "Accelerometer");
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set.setColor(ColorTemplate.getHoloBlue());
+        set.setCircleColor(Color.WHITE);
+        set.setLineWidth(1f);
+        set.setCircleRadius(1f);
+        set.setFillAlpha(65);
+        set.setFillColor(ColorTemplate.getHoloBlue());
+        set.setHighLightColor(Color.rgb(244, 117, 117));
+        set.setValueTextColor(Color.WHITE);
+        set.setValueTextSize(3f);
+        set.setDrawValues(false);
+        return set;
+    }
+
     public void setVideo(ParcelFileDescriptor pfd)
     {
-        //mr.setDisplay(mHolder);
-
-        mr = new MediaPlayer();
+        mr.setDisplay(mHolder);
 
         if(pfd == null)
         {
             Log.e("Pdf: ", "Null!");
         }
-
-            Log.e("First", "lel");
-            try
-            {
-                mr.setDataSource(pfd.getFileDescriptor());
-            }
-            catch(Exception e)
-            {
-                Log.e("Error: ", e.toString());
-            }
-
         try
         {
-            mr.prepareAsync();
+            Log.e("First", "lel");
+            mr.setDataSource(pfd.getFileDescriptor());
+            Log.e("First", "lel");
+            mr.prepare();
+            mr.start();
         }
         catch(Exception e)
         {
-            Log.e("Error at prepare: ", e.toString());
+            Log.e("Exception: ", e.toString());
         }
-            Log.e("Second", "lel");
-            //mr.prepare();
-            Log.e("Third", "lel");
-            //
-            //mr.setDataSource(hey.getFileDescriptor());
-            //mr.start();
     }
 
     public void surfaceCreated(SurfaceHolder holder)
@@ -119,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     {
         tester = 1234;
     }
-    public void updateAccelerometer(){}
+
     public void updateGPS(){}
     public void updateGyroscope(){}
 

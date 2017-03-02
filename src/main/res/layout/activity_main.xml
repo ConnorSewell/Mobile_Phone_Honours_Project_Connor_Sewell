@@ -10,16 +10,20 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.testproject.mobile_phone_honours_project_connor_sewell.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
+    <com.github.mikephil.charting.charts.LineChart
+        android:layout_width="350dp"
+        android:layout_height="200dp"
+        android:id="@+id/accelerometer_lineGraph">
+    </com.github.mikephil.charting.charts.LineChart>
+
 
     <SurfaceView
         android:id="@+id/video_view"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="300dp"
+        android:layout_height="200dp"
         android:layout_weight="1"
-        />
+        android:layout_marginBottom="16dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

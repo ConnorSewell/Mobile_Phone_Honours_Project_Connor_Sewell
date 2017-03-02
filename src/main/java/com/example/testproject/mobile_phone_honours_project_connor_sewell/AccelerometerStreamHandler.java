@@ -4,6 +4,9 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.widget.VideoView;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -30,6 +33,7 @@ public class AccelerometerStreamHandler implements Runnable
         socket = new Socket();
     }
 
+    BufferedReader is;
     @Override
     public void run()
     {
@@ -37,8 +41,21 @@ public class AccelerometerStreamHandler implements Runnable
         {
             socket.bind(null);
             socket.connect((new InetSocketAddress(ip, 7777)), 10000);
-            Log.i(TAG, "Connected to server!");
+            is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            Log.i(TAG, "Connected to server...");
+            while(true)
+            {
+                String line = is.readLine();
+                activity.updateAccelerometer(line);
 
+                try
+                {
+                    Thread.sleep(200);
+                }
+                catch(Exception e)
+                {}
+                //Log.i(TAG, line);
+            }
             //socket.close();
         } catch (Exception e)
         {
