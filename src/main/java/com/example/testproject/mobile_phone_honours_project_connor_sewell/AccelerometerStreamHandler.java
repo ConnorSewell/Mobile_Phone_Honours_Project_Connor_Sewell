@@ -51,7 +51,7 @@ public class AccelerometerStreamHandler implements Runnable
                 try
                 {
                     Thread.sleep(200);
-                }
+               }
                 catch(Exception e)
                 {}
                 //Log.i(TAG, line);

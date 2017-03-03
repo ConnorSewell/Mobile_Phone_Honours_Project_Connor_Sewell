@@ -27,11 +27,12 @@ public class NetworkManager extends BroadcastReceiver
     private WifiP2pManager.Channel mChannel;
     private WifiP2pManager mManager;
     final MainActivity mActivity;
-    boolean connected = false;
     String infoLogTag = "INFO: ";
     String errorLogTag = "ERROR: ";
     WifiP2pConfig config = new WifiP2pConfig();
+    WifiP2pDevice device = new WifiP2pDevice();
     Intent intent;
+    boolean connected = true;
 
     Thread connectionThread;
 
@@ -41,23 +42,45 @@ public class NetworkManager extends BroadcastReceiver
         this.mChannel = channel;
         this.mActivity = mActivity;
 
-        mManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener()
+        {
+
             @Override
-            public void onSuccess() {
+            public void onSuccess()
+            {
                 Log.i(infoLogTag, "Successful");
             }
 
             @Override
-            public void onFailure(int reasonCode) {
+            public void onFailure(int reasonCode)
+            {
                 Log.e(errorLogTag, "Failed. Reason Code = " + String.valueOf(reasonCode));
-           }
+            }
+
         });
     }
+
+    boolean started = false;
 
     @Override
     public void onReceive(Context context, Intent intent)
     {
+        Log.e("On Receive: ", "Complicated");
+
         String action = intent.getAction();
+        NetworkInfo networkInfo = null;
+
+        try
+        {
+            networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+        }
+        catch(Exception e){Log.e("Network Manager: ", e.toString());}
+            //if (networkInfo.isConnected())
+        //{
+        //    deviceConnected = true;
+        //}
+
+        Log.i("NetworkManager: ", "Changed: " + action.toString());
 
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action))
         {
@@ -65,42 +88,50 @@ public class NetworkManager extends BroadcastReceiver
         }
         else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action))
         {
-            mManager.requestPeers(mChannel, peerListListener);
-        }
-        else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action))
-        {
-            //Taken parts of below from: http://stackoverflow.com/questions/15621247/wifi-direct-group-owner-address
-            //^ Accessed: 12/02/2017 @ 22:40
-            NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
-            if(networkInfo.isConnected())
+            if(networkInfo == null)
             {
-                //connectionThread.interrupt();
-                //connectionThread = null;
-                Log.e("Inside Netowrk info, ", "...");
-                mManager.requestConnectionInfo(mChannel,
-                        new WifiP2pManager.ConnectionInfoListener()
-                        {
-                            @Override
-                            public void onConnectionInfoAvailable(WifiP2pInfo info)
-                            {
-                                InetAddress groupOwnerAddress = info.groupOwnerAddress;
-                                String hostIP = groupOwnerAddress.getHostAddress();
-                                Log.i(infoLogTag, hostIP);
-
-                                //VideoStreamHandler ds = new VideoStreamHandler(hostIP, mActivity);
-                                //Thread videoSendReceiveThread = new Thread(ds, "Thread: Video");
-                                //videoSendReceiveThread.start();
-
-                                AccelerometerStreamHandler ash = new AccelerometerStreamHandler(hostIP, mActivity);
-                                Thread accelerometerSendReceiveThread = new Thread(ash, "Thread: Accelerometer");
-                                accelerometerSendReceiveThread.start();
-                            }
-                        });
+                    mManager.requestPeers(mChannel, peerListListener);
             }
-        } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action))
-        {
-            Log.i("Info: ", action);
         }
+        else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
+            Log.e("Connection changed", "...");
+            if (!started)
+            {
+                //Taken parts of below from: http://stackoverflow.com/questions/15621247/wifi-direct-group-owner-address
+                //^ Accessed: 12/02/2017 @ 22:40
+                //NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+                if (networkInfo.isConnected())
+                {
+                    startStreams();
+                }
+            } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
+                Log.i("Info: ", action);
+            }
+        }
+    }
+
+    private void startStreams()
+    {
+        started = true;
+        Log.e("Inside Netowrk info, ", "...");
+        mManager.requestConnectionInfo(mChannel,
+                new WifiP2pManager.ConnectionInfoListener() {
+                    @Override
+                    public void onConnectionInfoAvailable(WifiP2pInfo info)
+                    {
+                        InetAddress groupOwnerAddress = info.groupOwnerAddress;
+                        String hostIP = groupOwnerAddress.getHostAddress();
+                        Log.i(infoLogTag, hostIP);
+
+                        VideoStreamHandler ds = new VideoStreamHandler(hostIP, mActivity);
+                        Thread videoSendReceiveThread = new Thread(ds, "Thread: Video");
+                        videoSendReceiveThread.start();
+
+                        AccelerometerStreamHandler ash = new AccelerometerStreamHandler(hostIP, mActivity);
+                        Thread accelerometerSendReceiveThread = new Thread(ash, "Thread: Accelerometer");
+                        accelerometerSendReceiveThread.start();
+                    }
+                });
     }
 
     private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
@@ -111,6 +142,7 @@ public class NetworkManager extends BroadcastReceiver
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
             if (!deviceConnected)
             {
+
                 Log.i(infoLogTag, "No of peers: " + String.valueOf(peerList.getDeviceList().size()));
 
                 peers.clear();
@@ -127,6 +159,7 @@ public class NetworkManager extends BroadcastReceiver
                         config.groupOwnerIntent = 0; //0~15...
                         config.wps.setup = WpsInfo.PBC;
                         deviceConnected = true;
+
 
                         //ConnectToServer cts = new ConnectToServer(mChannel, config);
                         //connectionThread = new Thread(cts, "Thread One");
@@ -164,7 +197,7 @@ class ConnectToServer implements Runnable
     private WifiP2pManager.Channel mChannel;
     private WifiP2pManager mManager;
     WifiP2pConfig config = new WifiP2pConfig();
-    Intent intent;
+    NetworkInfo networkInfo = null;
 
     public ConnectToServer(WifiP2pManager.Channel mChannel, WifiP2pConfig config)
     {

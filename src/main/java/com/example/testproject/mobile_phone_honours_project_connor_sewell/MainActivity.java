@@ -133,18 +133,31 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         if(data != null)
         {
             ILineDataSet set = data.getDataSetByIndex(0);
+            ILineDataSet set2 = data.getDataSetByIndex(1);
+            ILineDataSet set3 = data.getDataSetByIndex(2);
 
             if(set == null)
             {
-                set = createSet();
+                set = createSetX(Color.BLUE);
                 data.addDataSet(set);
             }
 
-            Log.i("Time: ", String.valueOf(time));
-            Log.i("X: ", String.valueOf(x));
+            if(set2 == null)
+            {
+                set2 = createSetX(Color.RED);
+                data.addDataSet(set2);
+            }
+
+            if(set3 == null)
+            {
+                set3 = createSetX(Color.GREEN);
+                data.addDataSet(set3);
+            }
 
             data.addEntry(new Entry(set.getEntryCount(), x), 0);
-            //data.addEntry(new Entry(set.getEntryCount(), (float) (Math.random() * 40) + 30f), 0);
+            data.addEntry(new Entry(set2.getEntryCount(), y), 1);
+            data.addEntry(new Entry(set3.getEntryCount(), z), 2);
+
             data.notifyDataChanged();
             accelerometerLineChart.notifyDataSetChanged();
             accelerometerLineChart.setVisibleXRangeMaximum(50);
@@ -152,22 +165,23 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
     }
 
-    private LineDataSet createSet()
+    private LineDataSet createSetX(int colour)
     {
-        LineDataSet set = new LineDataSet(null, "Accelerometer");
+        LineDataSet set = new LineDataSet(null, "Accelerometer X");
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set.setColor(ColorTemplate.getHoloBlue());
-        set.setCircleColor(Color.WHITE);
-        set.setLineWidth(1f);
-        set.setCircleRadius(1f);
-        set.setFillAlpha(65);
-        set.setFillColor(ColorTemplate.getHoloBlue());
-        set.setHighLightColor(Color.rgb(244, 117, 117));
-        set.setValueTextColor(Color.WHITE);
-        set.setValueTextSize(3f);
+        set.setColor(colour);
+        set.setCircleColor(colour);
+        //set.setLineWidth(1f);
+        //set.setCircleRadius(1f);
         set.setDrawValues(false);
         return set;
     }
+
+    //set.setFillAlpha(65);
+    //set.setFillColor(ColorTemplate.rgb("#00ff00"));
+    //set.setHighLightColor(Color.rgb(244, 117, 117));
+    //set.setValueTextColor(Color.BLUE);
+    //set.setValueTextSize(3f);
 
     public void setVideo(ParcelFileDescriptor pfd)
     {
