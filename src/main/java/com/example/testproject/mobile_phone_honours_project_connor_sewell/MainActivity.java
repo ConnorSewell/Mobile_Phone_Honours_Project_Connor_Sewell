@@ -3,6 +3,8 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -16,6 +18,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.Window;
+import android.widget.ImageView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -28,8 +33,13 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.io.DataInputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static android.R.attr.duration;
 
 /**https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
  *^Used for network related code (WifiP2pManager, Channel, BroadcastReceiver...). Accessed 08/02/2017 @ 14:55
@@ -39,7 +49,7 @@ import java.util.TimerTask;
  *       ^ Referenced 02/03/2017 @ 03:00 used for all graphing code
 */
 
-public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback
+public class MainActivity extends AppCompatActivity
 {
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
@@ -51,10 +61,12 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     private SurfaceView surfaceView;
     private SurfaceHolder mHolder;
     private MediaPlayer mr;
+    public ImageView iv;
 
     private VideoView vd;
 
     int tester;
+    PrintWriter optionWriter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -62,14 +74,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //surfaceView = (SurfaceView) findViewById(R.id.video_view);
-        //VideoView vd;
-        //vd = (VideoView) findViewById(R.id.video_test);
-        //mr = new MediaPlayer();
-        //mHolder = surfaceView.getHolder();
-        //mHolder.addCallback(this);
-
-        //setUpAccelerometerGraph();
+        iv = (ImageView) findViewById(R.id.image_view);
         setUpAccelerometerGraph();
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
@@ -127,7 +132,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         y = Float.parseFloat(values[1]);
         z = Float.parseFloat(values[2]);
         time = Long.parseLong(values[3]);
-       // counter++;
         LineData data = accelerometerLineChart.getData();
 
         if(data != null)
@@ -171,58 +175,24 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setColor(colour);
         set.setCircleColor(colour);
-        //set.setLineWidth(1f);
-        //set.setCircleRadius(1f);
+        set.setCircleRadius(0.1f);
+        set.setLineWidth(0.1f);
         set.setDrawValues(false);
         return set;
     }
 
-    //set.setFillAlpha(65);
-    //set.setFillColor(ColorTemplate.rgb("#00ff00"));
-    //set.setHighLightColor(Color.rgb(244, 117, 117));
-    //set.setValueTextColor(Color.BLUE);
-    //set.setValueTextSize(3f);
+    boolean imageDisplayInProgress = false;
 
-    public void setVideo(ParcelFileDescriptor pfd)
+    public void doToast()
     {
-        mr.setDisplay(mHolder);
-
-        if(pfd == null)
-        {
-            Log.e("Pdf: ", "Null!");
-        }
-        try
-        {
-            Log.e("First", "lel");
-            mr.setDataSource(pfd.getFileDescriptor());
-            Log.e("First", "lel");
-            mr.prepare();
-            mr.start();
-        }
-        catch(Exception e)
-        {
-            Log.e("Exception: ", e.toString());
-        }
+        Toast toast = Toast.makeText(this, "lol 100", Toast.LENGTH_SHORT);
+        toast.show();
     }
 
-    public void surfaceCreated(SurfaceHolder holder)
-    {}
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder)
+    public void setImage(byte[] imgBytes)
     {
-        // empty. Take care of releasing the Camera preview in your activity.
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h)
-    {
-
-    }
-
-    public void updateVideo()
-    {
-        tester = 1234;
+        Bitmap bmp = BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
+        iv.setImageBitmap(Bitmap.createScaledBitmap(bmp, iv.getWidth(), iv.getHeight(), false));
     }
 
     public void updateGPS(){}
@@ -240,6 +210,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     {
         super.onPause();
         unregisterReceiver(mReceiver);
+    }
+
+    public void setOptionWriter(PrintWriter out)
+    {
+        this.optionWriter = out;
     }
 
 }

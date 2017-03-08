@@ -11,6 +11,7 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
+import android.widget.ImageView;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class NetworkManager extends BroadcastReceiver
     WifiP2pDevice device = new WifiP2pDevice();
     Intent intent;
     boolean connected = true;
+    boolean started = false;
 
     Thread connectionThread;
 
@@ -58,9 +60,24 @@ public class NetworkManager extends BroadcastReceiver
             }
 
         });
-    }
 
-    boolean started = false;
+        //mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener()
+        //{
+
+        //    @Override
+        //    public void onSuccess()
+        //    {
+        //        Log.i(infoLogTag, "Successful");
+        //    }
+
+        //    @Override
+        //    public void onFailure(int reasonCode)
+        //    {
+        //        Log.e(errorLogTag, "Failed. Reason Code = " + String.valueOf(reasonCode));
+        //    }
+
+        //});
+    }
 
     @Override
     public void onReceive(Context context, Intent intent)
@@ -75,6 +92,8 @@ public class NetworkManager extends BroadcastReceiver
             networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
         }
         catch(Exception e){Log.e("Network Manager: ", e.toString());}
+
+        Log.e("lol", "I always get here?");
             //if (networkInfo.isConnected())
         //{
         //    deviceConnected = true;
@@ -88,31 +107,46 @@ public class NetworkManager extends BroadcastReceiver
         }
         else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action))
         {
+            if(networkInfo !=null)
+            {
+                if (!networkInfo.isConnected()) {
+                    mManager.requestPeers(mChannel, peerListListener);
+                }
+            }
+
             if(networkInfo == null)
             {
-                    mManager.requestPeers(mChannel, peerListListener);
+                mManager.requestPeers(mChannel, peerListListener);
             }
         }
-        else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
-            Log.e("Connection changed", "...");
-            if (!started)
+        else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action))
+        {
+            if (networkInfo.isConnected() && !started)
             {
+                started = true;
+                startStreams();
+                Log.e("It's connected...","...");
+            }
+            else
+            {
+                Log.e("Not connected", "...");
+            }
+            Log.e("Connection changed", "...");
+
+            Log.e("Started loop", "dasdasd");
                 //Taken parts of below from: http://stackoverflow.com/questions/15621247/wifi-direct-group-owner-address
                 //^ Accessed: 12/02/2017 @ 22:40
                 //NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
-                if (networkInfo.isConnected())
-                {
-                    startStreams();
-                }
+
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
                 Log.i("Info: ", action);
             }
         }
-    }
+
 
     private void startStreams()
     {
-        started = true;
+        //started = true;
         Log.e("Inside Netowrk info, ", "...");
         mManager.requestConnectionInfo(mChannel,
                 new WifiP2pManager.ConnectionInfoListener() {
@@ -177,9 +211,7 @@ public class NetworkManager extends BroadcastReceiver
                                 Log.i("INFO", "Failed to connect");
                             }
                         });
-
-                        }
-
+                       }
                     }
                 }
 

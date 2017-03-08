@@ -47,19 +47,10 @@ public class AccelerometerStreamHandler implements Runnable
             {
                 String line = is.readLine();
                 activity.updateAccelerometer(line);
-
-                try
-                {
-                    Thread.sleep(200);
-               }
-                catch(Exception e)
-                {}
-                //Log.i(TAG, line);
             }
-            //socket.close();
         } catch (Exception e)
         {
-            Log.e("Error: ", e.toString());
+            Log.e(TAG, e.toString());
         }
     }
 }
