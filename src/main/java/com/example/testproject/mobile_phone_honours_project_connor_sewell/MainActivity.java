@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity
 
     int tester;
     PrintWriter optionWriter;
+    Graphing graphing = new Graphing();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -75,11 +77,16 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         iv = (ImageView) findViewById(R.id.image_view);
-        setUpAccelerometerGraph();
+        //setUpAccelerometerGraph();
+        accelerometerLineChart = (LineChart) findViewById(R.id.accelerometer_lineGraph);
+        accelerometerLineChart = graphing.setUpGraph(accelerometerLineChart);
+
+        Button clickButton = (Button) findViewById(R.id.button);
+
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
-        mReceiver = new NetworkManager(mManager, mChannel, this);
+        mReceiver = new NetworkManager(mManager, mChannel, this, clickButton);
 
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -89,96 +96,9 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
     }
 
-    public void setUpAccelerometerGraph()
+    public void updateAccelerometer(String line)
     {
-        accelerometerLineChart = (LineChart) findViewById(R.id.accelerometer_lineGraph);
-        accelerometerLineChart.setScaleEnabled(true);
-        accelerometerLineChart.setPinchZoom(true);
-        accelerometerLineChart.setBackgroundColor(Color.GRAY);
-        accelerometerLineChart.setDescription(null);
-
-        LineData accelerometerData = new LineData();
-        accelerometerData.setValueTextColor(Color.WHITE);
-
-        accelerometerLineChart.setData(accelerometerData);
-
-        Legend accelerometerLegend = accelerometerLineChart.getLegend();
-        accelerometerLegend.setForm(Legend.LegendForm.LINE);
-        accelerometerLegend.setTextColor(Color.WHITE);
-
-        XAxis accelerometerAxisX = accelerometerLineChart.getXAxis();
-        accelerometerAxisX.setTextColor(Color.WHITE);
-        accelerometerAxisX.setAvoidFirstLastClipping(true);
-
-        YAxis accelerometerAxisYLeft = accelerometerLineChart.getAxisLeft();
-        accelerometerAxisYLeft.setTextColor(Color.WHITE);
-        //accelerometerAxisYLeft.setAxisMaximum(3.f);
-
-        YAxis accelerometerAxisYRight = accelerometerLineChart.getAxisRight();
-        accelerometerAxisYRight.setEnabled(false);
-    }
-
-
-    float x;
-    float y;
-    float z;
-    long time;
-    int counter = 0;
-
-    public void updateAccelerometer(String inputLine)
-    {
-        String[] values = inputLine.split(",");
-        x = Float.parseFloat(values[0]);
-        y = Float.parseFloat(values[1]);
-        z = Float.parseFloat(values[2]);
-        time = Long.parseLong(values[3]);
-        LineData data = accelerometerLineChart.getData();
-
-        if(data != null)
-        {
-            ILineDataSet set = data.getDataSetByIndex(0);
-            ILineDataSet set2 = data.getDataSetByIndex(1);
-            ILineDataSet set3 = data.getDataSetByIndex(2);
-
-            if(set == null)
-            {
-                set = createSetX(Color.BLUE);
-                data.addDataSet(set);
-            }
-
-            if(set2 == null)
-            {
-                set2 = createSetX(Color.RED);
-                data.addDataSet(set2);
-            }
-
-            if(set3 == null)
-            {
-                set3 = createSetX(Color.GREEN);
-                data.addDataSet(set3);
-            }
-
-            data.addEntry(new Entry(set.getEntryCount(), x), 0);
-            data.addEntry(new Entry(set2.getEntryCount(), y), 1);
-            data.addEntry(new Entry(set3.getEntryCount(), z), 2);
-
-            data.notifyDataChanged();
-            accelerometerLineChart.notifyDataSetChanged();
-            accelerometerLineChart.setVisibleXRangeMaximum(50);
-            accelerometerLineChart.moveViewToX(data.getEntryCount());
-        }
-    }
-
-    private LineDataSet createSetX(int colour)
-    {
-        LineDataSet set = new LineDataSet(null, "Accelerometer X");
-        set.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set.setColor(colour);
-        set.setCircleColor(colour);
-        set.setCircleRadius(0.1f);
-        set.setLineWidth(0.1f);
-        set.setDrawValues(false);
-        return set;
+        accelerometerLineChart = graphing.updateGraph(line, accelerometerLineChart);
     }
 
     boolean imageDisplayInProgress = false;

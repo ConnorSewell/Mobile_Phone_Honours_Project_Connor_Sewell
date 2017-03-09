@@ -2,6 +2,7 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.NetworkInfo;
 import android.net.wifi.WpsInfo;
@@ -11,6 +12,8 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import java.net.InetAddress;
@@ -35,14 +38,37 @@ public class NetworkManager extends BroadcastReceiver
     Intent intent;
     boolean connected = true;
     boolean started = false;
+    Button connectBtn;
 
     Thread connectionThread;
 
-    public NetworkManager(WifiP2pManager manager, WifiP2pManager.Channel channel, MainActivity mActivity)
+    public NetworkManager(WifiP2pManager manager, WifiP2pManager.Channel channel, MainActivity mActivity, Button connectBtn)
     {
         this.mManager = manager;
         this.mChannel = channel;
         this.mActivity = mActivity;
+        this.connectBtn = connectBtn;
+
+        connectBtn.setOnClickListener( new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()
+                {
+                    @Override
+                    public void onSuccess()
+                    {
+                        Log.i("INFO", "Connection made");
+                    }
+
+                    @Override
+                    public void onFailure(int reason) {
+                        Log.i("INFO", "Failed to connect");
+                    }
+                });
+            }
+        });
 
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener()
         {
@@ -194,23 +220,10 @@ public class NetworkManager extends BroadcastReceiver
                         config.wps.setup = WpsInfo.PBC;
                         deviceConnected = true;
 
-
                         //ConnectToServer cts = new ConnectToServer(mChannel, config);
                         //connectionThread = new Thread(cts, "Thread One");
                         //connectionThread.start();
-                        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()
-                        {
-                            @Override
-                            public void onSuccess()
-                            {
-                                Log.i("INFO", "Connection made");
-                            }
 
-                            @Override
-                            public void onFailure(int reason) {
-                                Log.i("INFO", "Failed to connect");
-                            }
-                        });
                        }
                     }
                 }
@@ -223,6 +236,9 @@ public class NetworkManager extends BroadcastReceiver
             }
     };
 }
+
+
+
 
 class ConnectToServer implements Runnable
 {

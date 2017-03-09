@@ -42,10 +42,11 @@ public class AccelerometerStreamHandler implements Runnable
             socket.bind(null);
             socket.connect((new InetSocketAddress(ip, 7777)), 10000);
             is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String line = is.readLine();
             Log.i(TAG, "Connected to server...");
             while(true)
             {
-                String line = is.readLine();
+                line = is.readLine();
                 activity.updateAccelerometer(line);
             }
         } catch (Exception e)
