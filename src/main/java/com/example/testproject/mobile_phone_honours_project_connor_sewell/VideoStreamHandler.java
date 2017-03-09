@@ -52,6 +52,7 @@ public class VideoStreamHandler implements Runnable
         this.ip = ip;
         this.activity = activity;
         socket = new Socket();
+        Log.e("ANDREW: ","CUNT");
     }
 
     InputStream is;

@@ -16,6 +16,10 @@ import java.util.List;
 
 /**
  * Created by Connor on 09/03/2017.
+ *
+ * https://www.youtube.com/watch?v=a20EchSQgpw Referenced 02/03/2017 @ 02:59
+ * ^ AND https://github.com/PhilJay/MPAndroidChart/blob/master/MPChartExample/src/com/xxmassdeveloper/mpchartexample/RealtimeLineChartActivity.java
+ * ^ Referenced 02/03/2017 @ 03:00 used for all graphing code
  */
 
 public class Graphing
@@ -56,7 +60,7 @@ public class Graphing
     long time;
     int counter = 0;
 
-    public LineChart updateGraph(String inputLine, LineChart graph)
+    public LineChart updateGraph(String inputLine, LineChart graph, String graphName)
     {
         String[] values = inputLine.split(",");
         x = Float.parseFloat(values[0]);
@@ -73,30 +77,25 @@ public class Graphing
 
             if(set == null)
             {
-                set = createSet(Color.BLUE, "Accelerometer X: ");
+                set = createSet(Color.BLUE, graphName + "X");
                 data.addDataSet(set);
             }
 
             if(set2 == null)
             {
-                set2 = createSet(Color.RED, "Accelerometer Y: ");
+                set2 = createSet(Color.RED, graphName + "Y");
                 data.addDataSet(set2);
             }
 
             if(set3 == null)
             {
-                set3 = createSet(Color.GREEN, "Accelerometer Z: ");
+                set3 = createSet(Color.GREEN, graphName + "Z");
                 data.addDataSet(set3);
             }
 
             data.addEntry(new Entry(set.getEntryCount(), x), 0);
             data.addEntry(new Entry(set2.getEntryCount(), y), 1);
             data.addEntry(new Entry(set3.getEntryCount(), z), 2);
-
-                //data.addEntry(new Entry(set.getEntryCount(), x), 0);
-                //data.addEntry(new Entry(set2.getEntryCount(), y), 1);
-                //data.addEntry(new Entry(set3.getEntryCount(), z), 2);
-
             //data.removeEntry(0, 0);
             data.notifyDataChanged();
             //graph.clear();

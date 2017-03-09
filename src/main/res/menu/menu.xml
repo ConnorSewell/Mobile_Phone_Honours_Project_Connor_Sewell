@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://www.youtube.com/watch?v=EZ-sNN7UWFU
+^Used for toolbar options. Accessed 09/03/2017 @ 18:00. Also used in MainActivity
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/modeOption"
+        android:title="@string/menu_mode"
+        app:showAsAction="always"
+        />
+    <item
+        android:id="@+id/connectOption"
+        android:title="@string/menu_connect"
+        app:showAsAction="always"
+        />
+    <item
+        android:id="@+id/startOption"
+        android:title="@string/menu_start"
+        app:showAsAction="always"
+        />
+
+</menu>

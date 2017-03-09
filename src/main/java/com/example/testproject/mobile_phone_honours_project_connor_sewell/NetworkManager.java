@@ -42,33 +42,12 @@ public class NetworkManager extends BroadcastReceiver
 
     Thread connectionThread;
 
-    public NetworkManager(WifiP2pManager manager, WifiP2pManager.Channel channel, MainActivity mActivity, Button connectBtn)
+    public NetworkManager(WifiP2pManager manager, WifiP2pManager.Channel channel, MainActivity mActivity)
     {
         this.mManager = manager;
         this.mChannel = channel;
         this.mActivity = mActivity;
         this.connectBtn = connectBtn;
-
-        connectBtn.setOnClickListener( new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()
-                {
-                    @Override
-                    public void onSuccess()
-                    {
-                        Log.i("INFO", "Connection made");
-                    }
-
-                    @Override
-                    public void onFailure(int reason) {
-                        Log.i("INFO", "Failed to connect");
-                    }
-                });
-            }
-        });
 
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener()
         {
@@ -105,6 +84,11 @@ public class NetworkManager extends BroadcastReceiver
         //});
     }
 
+    public void startStreaming()
+    {
+        //startStreams();
+    }
+
     @Override
     public void onReceive(Context context, Intent intent)
     {
@@ -133,24 +117,24 @@ public class NetworkManager extends BroadcastReceiver
         }
         else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action))
         {
-            if(networkInfo !=null)
-            {
-                if (!networkInfo.isConnected()) {
-                    mManager.requestPeers(mChannel, peerListListener);
-                }
-            }
+            //if(networkInfo !=null)
+           // {
+           //     if (!networkInfo.isConnected()) {
+           //         mManager.requestPeers(mChannel, peerListListener);
+           //     }
+           // }
 
-            if(networkInfo == null)
-            {
-                mManager.requestPeers(mChannel, peerListListener);
-            }
+           // if(networkInfo == null)
+           // {
+           //     mManager.requestPeers(mChannel, peerListListener);
+           // }
         }
         else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action))
         {
             if (networkInfo.isConnected() && !started)
             {
                 started = true;
-                startStreams();
+                //
                 Log.e("It's connected...","...");
             }
             else
@@ -170,6 +154,7 @@ public class NetworkManager extends BroadcastReceiver
         }
 
 
+    /**
     private void startStreams()
     {
         //started = true;
@@ -190,10 +175,17 @@ public class NetworkManager extends BroadcastReceiver
                         AccelerometerStreamHandler ash = new AccelerometerStreamHandler(hostIP, mActivity);
                         Thread accelerometerSendReceiveThread = new Thread(ash, "Thread: Accelerometer");
                         accelerometerSendReceiveThread.start();
+
+                        GyroscopeStreamHandler gsh = new GyroscopeStreamHandler(hostIP, mActivity);
+                        Thread gyroscopeSendReceiveThread = new Thread(gsh, "Thread: Gyroscope");
+                        gyroscopeSendReceiveThread.start();
+
                     }
                 });
     }
+     */
 
+    /**
     private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
     boolean deviceConnected = false;
 
@@ -235,9 +227,8 @@ public class NetworkManager extends BroadcastReceiver
                 }
             }
     };
+     */
 }
-
-
 
 
 class ConnectToServer implements Runnable
