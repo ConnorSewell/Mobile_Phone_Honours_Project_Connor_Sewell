@@ -25,14 +25,6 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         />
 
-    <ImageView
-        android:id="@+id/image_view"
-        android:layout_width="350dp"
-        android:layout_height="200dp"
-        android:layout_weight="1"
-        android:layout_below="@+id/toolbar"
-        android:layout_alignLeft="@+id/accelerometer_lineGraph" />
-
     <com.github.mikephil.charting.charts.LineChart
         android:layout_width="350dp"
         android:layout_height="200dp"
@@ -42,13 +34,21 @@
         android:layout_marginTop="11dp">
     </com.github.mikephil.charting.charts.LineChart>
 
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="350dp"
+        android:layout_height="200dp"
+        android:layout_weight="1"
+        android:layout_below="@+id/toolbar"
+        android:layout_alignLeft="@+id/accelerometer_lineGraph"
+        android:layout_marginTop="11dp" />
+
     <com.github.mikephil.charting.charts.LineChart
         android:layout_width="350dp"
         android:layout_height="200dp"
         android:id="@+id/gyroscope_lineGraph"
         android:layout_below="@+id/accelerometer_lineGraph"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="11dp">
+        android:layout_centerHorizontal="true">
     </com.github.mikephil.charting.charts.LineChart>
 
 

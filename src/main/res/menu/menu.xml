@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 https://www.youtube.com/watch?v=EZ-sNN7UWFU
-^Used for toolbar options. Accessed 09/03/2017 @ 18:00. Also used in MainActivity
+^Used for toolbar options. Minorly used in activity_main.xml too. Accessed 09/03/2017 @ 18:00. Also used in MainActivity
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/modeOption"
-        android:title="@string/menu_mode"
-        app:showAsAction="always"
-        />
-    <item
-        android:id="@+id/connectOption"
-        android:title="@string/menu_connect"
+        android:id="@+id/toggleOption"
+        android:title="@string/menu_toggle"
         app:showAsAction="always"
         />
     <item
@@ -20,5 +15,11 @@ https://www.youtube.com/watch?v=EZ-sNN7UWFU
         android:title="@string/menu_start"
         app:showAsAction="always"
         />
+    <item
+        android:id="@+id/peersOption"
+        android:title="@string/menu_peers"
+        app:showAsAction="always">
+        <menu></menu>
+    </item>
 
 </menu>

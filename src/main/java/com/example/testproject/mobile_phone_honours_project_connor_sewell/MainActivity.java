@@ -10,6 +10,8 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.media.session.MediaController;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -26,6 +28,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
@@ -70,6 +73,9 @@ public class MainActivity extends AppCompatActivity
     BroadcastReceiver mReceiver;
     IntentFilter mIntentFilter;
 
+    List<WifiP2pConfig> configs = new ArrayList<WifiP2pConfig>();
+    List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
+
     LineChart accelerometerLineChart;
     LineChart gyroscopeLineChart;
 
@@ -86,6 +92,9 @@ public class MainActivity extends AppCompatActivity
     PrintWriter optionWriter;
     Graphing graphing = new Graphing();
 
+    SubMenu sm;
+    Menu menu;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -96,6 +105,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         iv = (ImageView) findViewById(R.id.image_view);
+        iv.setBackgroundColor(Color.BLACK);
         //setUpAccelerometerGraph();
         accelerometerLineChart = (LineChart) findViewById(R.id.accelerometer_lineGraph);
         gyroscopeLineChart = (LineChart) findViewById(R.id.gyroscope_lineGraph);
@@ -103,12 +113,12 @@ public class MainActivity extends AppCompatActivity
         accelerometerLineChart = graphing.setUpGraph(accelerometerLineChart);
         gyroscopeLineChart = graphing.setUpGraph(gyroscopeLineChart);
 
-        //Button clickButton = (Button) findViewById(R.id.button);
+        accelerometerLineChart.setBackgroundColor(Color.BLACK);
+        gyroscopeLineChart.setBackgroundColor(Color.BLACK);
+
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
         mReceiver = new NetworkManager(mManager, mChannel, this);
-
-        //discoverPeers();
 
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -116,6 +126,8 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
+
+        //discoverPeers();
     }
 
     //https://www.youtube.com/watch?v=EZ-sNN7UWFU
@@ -123,28 +135,74 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        if(item.getItemId() == R.id.modeOption)
+      if(item.getItemId() == R.id.peersOption)
         {
-            mManager.requestPeers(mChannel, peerListListener);
-        }else if(item.getItemId() == R.id.connectOption)
-        {
-            connectDevices();
+            //connectDevices();
         }
         else if(item.getItemId() == R.id.startOption)
         {
             startStreams();
         }
+        else if(item.getGroupId() == 2)
+      {
+          Log.e("...", String.valueOf(item.getItemId()));
+          if (item.getItemId() == 0)
+          {
+              Log.e("..","hah");
+              //Toast.makeText(this, "New Request Made", Toast.LENGTH_LONG);
+              requestPeers();
+          } else {
+
+              mManager.connect(mChannel, configs.get(item.getItemId() - 1), new WifiP2pManager.ActionListener() {
+                  @Override
+                  public void onSuccess() {
+                      Log.i("INFO", "Connection made");
+                  }
+
+                  @Override
+                  public void onFailure(int reason) {
+                      Log.i("INFO", "Failed to connect");
+                  }
+              });
+
+          }
+      }
 
         return true;
     }
-
-    //Also taken from above reference (toolbar)
+    boolean setup = false;
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.menu, menu);
+        this.menu = menu;
+        menu.getItem(1).setEnabled(false);
+        sm = menu.getItem(2).getSubMenu();
+        sm.add(2, 0, 0, "Rediscover");
+        setup = true;
+        requestPeers();
         return true;
+    }
+
+    public void changeButtonStates()
+    {
+        menu.getItem(1).setEnabled(!menu.getItem(1).isEnabled());
+        menu.getItem(2).setEnabled(!menu.getItem(2).isEnabled());
+
+        if(menu.getItem(2).isEnabled())
+        {
+            for(int i = 1; i < sm.size(); i++)
+            {
+                sm.removeItem(i);
+            }
+            requestPeers();
+        }
+    }
+
+    private void requestPeers()
+    {
+        mManager.requestPeers(mChannel, peerListListener);
     }
 
     private void startStreams()
@@ -193,16 +251,18 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
     boolean deviceConnected = false;
+    int i;
+    int deviceCount;
 
        private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
             @Override
             public void onPeersAvailable(WifiP2pDeviceList peerList) {
+                configs.clear();
                 peers.clear();
                 peers.addAll(peerList.getDeviceList());
 
-                for (int i = 0; i < peerList.getDeviceList().size(); i++) {
+                for (i = 0; i < peerList.getDeviceList().size(); i++) {
                     if (peers.get(i).deviceName.toString().equals("Android_9c2d")) ;
                     {
                         Log.i("Tag..." + ": Device: ", peers.get(i).deviceName.toString());
@@ -212,15 +272,26 @@ public class MainActivity extends AppCompatActivity
                         config.deviceAddress = device.deviceAddress;
                         config.groupOwnerIntent = 0; //0~15...
                         config.wps.setup = WpsInfo.PBC;
+                        configs.add(config);
+
+                        runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                sm.add(2, sm.size(), 0, peers.get(sm.size() - 1).deviceName);
+                            }
+                        });
+
+                        deviceCount++;
                     }
                 }
-
-                if (peers.size() == 0) {
+                if (peers.size() == 0)
+                {
                     Log.i("Info...", "No devices found");
                     return;
                 }
-
-                }};
+               }};
 
 
     public void updateAccelerometer(String line)
@@ -233,14 +304,6 @@ public class MainActivity extends AppCompatActivity
         gyroscopeLineChart = graphing.updateGraph(line, gyroscopeLineChart, "Gyroscope: ");
     }
 
-    boolean imageDisplayInProgress = false;
-
-    public void doToast()
-    {
-        Toast toast = Toast.makeText(this, "lol 100", Toast.LENGTH_SHORT);
-        toast.show();
-    }
-
     public void setImage(byte[] imgBytes)
     {
         Bitmap bmp = BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
@@ -248,7 +311,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void updateGPS(){}
-    public void updateGyroscope(){}
 
     @Override
     protected void onResume()
@@ -268,8 +330,8 @@ public class MainActivity extends AppCompatActivity
     {
         this.optionWriter = out;
     }
-
 }
+
 
 
 

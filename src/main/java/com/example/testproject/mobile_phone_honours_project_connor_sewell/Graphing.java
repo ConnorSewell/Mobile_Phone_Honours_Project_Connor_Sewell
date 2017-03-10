@@ -29,7 +29,7 @@ public class Graphing
         graph.setScaleEnabled(true);
         graph.setDragEnabled(false);
         graph.setPinchZoom(true);
-        graph.setBackgroundColor(Color.GRAY);
+        graph.setBackgroundColor(Color.BLACK);
         graph.setDescription(null);
 
         LineData graphData = new LineData();

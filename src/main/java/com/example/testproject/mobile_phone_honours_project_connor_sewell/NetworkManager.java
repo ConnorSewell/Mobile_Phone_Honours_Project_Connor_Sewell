@@ -37,7 +37,7 @@ public class NetworkManager extends BroadcastReceiver
     WifiP2pDevice device = new WifiP2pDevice();
     Intent intent;
     boolean connected = true;
-    boolean started = false;
+    boolean devicesConnected = false;
     Button connectBtn;
 
     Thread connectionThread;
@@ -55,45 +55,21 @@ public class NetworkManager extends BroadcastReceiver
             @Override
             public void onSuccess()
             {
-                Log.i(infoLogTag, "Successful");
+                Log.i("Discover: ", "Successful");
             }
 
             @Override
             public void onFailure(int reasonCode)
             {
-                Log.e(errorLogTag, "Failed. Reason Code = " + String.valueOf(reasonCode));
+                Log.e("Discover: ", "Failed. Reason Code = " + String.valueOf(reasonCode));
             }
 
         });
-
-        //mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener()
-        //{
-
-        //    @Override
-        //    public void onSuccess()
-        //    {
-        //        Log.i(infoLogTag, "Successful");
-        //    }
-
-        //    @Override
-        //    public void onFailure(int reasonCode)
-        //    {
-        //        Log.e(errorLogTag, "Failed. Reason Code = " + String.valueOf(reasonCode));
-        //    }
-
-        //});
-    }
-
-    public void startStreaming()
-    {
-        //startStreams();
     }
 
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        Log.e("On Receive: ", "Complicated");
-
         String action = intent.getAction();
         NetworkInfo networkInfo = null;
 
@@ -102,12 +78,6 @@ public class NetworkManager extends BroadcastReceiver
             networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
         }
         catch(Exception e){Log.e("Network Manager: ", e.toString());}
-
-        Log.e("lol", "I always get here?");
-            //if (networkInfo.isConnected())
-        //{
-        //    deviceConnected = true;
-        //}
 
         Log.i("NetworkManager: ", "Changed: " + action.toString());
 
@@ -131,15 +101,14 @@ public class NetworkManager extends BroadcastReceiver
         }
         else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action))
         {
-            if (networkInfo.isConnected() && !started)
+            if (networkInfo.isConnected() && !devicesConnected)
             {
-                started = true;
-                //
-                Log.e("It's connected...","...");
+                devicesConnected = true;
+                mActivity.changeButtonStates();
             }
             else
             {
-                Log.e("Not connected", "...");
+                devicesConnected = false;
             }
             Log.e("Connection changed", "...");
 
