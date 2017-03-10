@@ -29,7 +29,7 @@ public class Graphing
         graph.setScaleEnabled(true);
         graph.setDragEnabled(false);
         graph.setPinchZoom(true);
-        graph.setBackgroundColor(Color.BLACK);
+        graph.setBackgroundColor(Color.GRAY);
         graph.setDescription(null);
 
         LineData graphData = new LineData();
@@ -77,13 +77,13 @@ public class Graphing
 
             if(set == null)
             {
-                set = createSet(Color.BLUE, graphName + "X");
+                set = createSet(Color.CYAN, graphName + "X");
                 data.addDataSet(set);
             }
 
             if(set2 == null)
             {
-                set2 = createSet(Color.RED, graphName + "Y");
+                set2 = createSet(Color.YELLOW, graphName + "Y");
                 data.addDataSet(set2);
             }
 
@@ -112,7 +112,7 @@ public class Graphing
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setColor(colour);
         set.setDrawCircles(false);
-        set.setLineWidth(0.2f);
+        set.setLineWidth(0.5f);
         set.setDrawValues(false);
         return set;
     }

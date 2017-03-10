@@ -48,7 +48,8 @@
         android:layout_height="200dp"
         android:id="@+id/gyroscope_lineGraph"
         android:layout_below="@+id/accelerometer_lineGraph"
-        android:layout_centerHorizontal="true">
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="14dp">
     </com.github.mikephil.charting.charts.LineChart>
 
 

@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         iv = (ImageView) findViewById(R.id.image_view);
-        iv.setBackgroundColor(Color.BLACK);
+        iv.setBackgroundColor(Color.GRAY);
         //setUpAccelerometerGraph();
         accelerometerLineChart = (LineChart) findViewById(R.id.accelerometer_lineGraph);
         gyroscopeLineChart = (LineChart) findViewById(R.id.gyroscope_lineGraph);
@@ -263,8 +263,7 @@ public class MainActivity extends AppCompatActivity
                 peers.addAll(peerList.getDeviceList());
 
                 for (i = 0; i < peerList.getDeviceList().size(); i++) {
-                    if (peers.get(i).deviceName.toString().equals("Android_9c2d")) ;
-                    {
+
                         Log.i("Tag..." + ": Device: ", peers.get(i).deviceName.toString());
                         Log.i("Tag..." + ": Address: ", peers.get(i).deviceAddress.toString());
 
@@ -284,7 +283,7 @@ public class MainActivity extends AppCompatActivity
                         });
 
                         deviceCount++;
-                    }
+
                 }
                 if (peers.size() == 0)
                 {
