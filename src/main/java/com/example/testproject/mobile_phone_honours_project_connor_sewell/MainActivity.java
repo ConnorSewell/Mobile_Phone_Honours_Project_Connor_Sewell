@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.AudioFormat;
+import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.media.session.MediaController;
@@ -128,6 +130,8 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
 
         //discoverPeers();
+        int otherBufferSize = AudioTrack.getMinBufferSize(8000, 2, AudioFormat.ENCODING_PCM_8BIT);
+        Log.e("Other size: ", String.valueOf(otherBufferSize));
     }
 
     //https://www.youtube.com/watch?v=EZ-sNN7UWFU
@@ -229,6 +233,10 @@ public class MainActivity extends AppCompatActivity
                         GyroscopeStreamHandler gsh = new GyroscopeStreamHandler(hostIP, activity);
                         Thread gyroscopeSendReceiveThread = new Thread(gsh, "Thread: Gyroscope");
                         gyroscopeSendReceiveThread.start();
+
+                        AudioStreamHandler audioSH = new AudioStreamHandler(hostIP, activity);
+                        Thread audioReceiveThread = new Thread(audioSH, "Thread: Audio");
+                        audioReceiveThread.start();
 
                     }
                 });
