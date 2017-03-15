@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -115,6 +117,9 @@ public class MainActivity extends AppCompatActivity
         accelerometerLineChart = graphing.setUpGraph(accelerometerLineChart);
         gyroscopeLineChart = graphing.setUpGraph(gyroscopeLineChart);
 
+        //int rate = AudioTrack.getMinBufferSize(44100, 2, AudioFormat.ENCODING_PCM_16BIT);
+        //Log.e("Rate: ", String.valueOf(rate));
+
         accelerometerLineChart.setBackgroundColor(Color.BLACK);
         gyroscopeLineChart.setBackgroundColor(Color.BLACK);
 
@@ -128,10 +133,6 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
-
-        //discoverPeers();
-        int otherBufferSize = AudioTrack.getMinBufferSize(8000, 2, AudioFormat.ENCODING_PCM_8BIT);
-        Log.e("Other size: ", String.valueOf(otherBufferSize));
     }
 
     //https://www.youtube.com/watch?v=EZ-sNN7UWFU

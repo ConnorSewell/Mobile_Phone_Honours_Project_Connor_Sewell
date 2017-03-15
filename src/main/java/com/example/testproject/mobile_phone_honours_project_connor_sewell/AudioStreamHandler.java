@@ -2,6 +2,7 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 
 import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.util.Log;
 import android.widget.VideoView;
@@ -37,18 +38,6 @@ public class AudioStreamHandler implements Runnable
         this.ip = ip;
         this.ma = activity;
         socket = new Socket();
-
-        audioTrack = new  AudioTrack(AudioManager.STREAM_VOICE_CALL, 8000, 2, AudioFormat.ENCODING_PCM_8BIT, 1280, AudioTrack.MODE_STREAM);
-        audioTrack.setPlaybackRate(8000);
-
-        if (audioTrack.STATE_INITIALIZED == 1)
-        {
-            audioTrack.play();
-        }
-        else if(audioTrack.STATE_INITIALIZED == 0)
-        {
-            Log.e(TAG, "NOT INITIALISED");
-        }
     }
 
     DataInputStream dis;
@@ -66,6 +55,20 @@ public class AudioStreamHandler implements Runnable
             socket.connect((new InetSocketAddress(ip, 3333)), 10000);
             is = socket.getInputStream();
             dis = new DataInputStream(is);
+
+            audioTrack = new  AudioTrack(AudioManager.STREAM_MUSIC, 44100, 2, AudioFormat.ENCODING_PCM_16BIT, 7680, AudioTrack.MODE_STREAM);
+            audioTrack.setPlaybackRate(44100);
+
+
+            if (audioTrack.STATE_INITIALIZED == 1)
+            {
+                audioTrack.play();
+            }
+            else if(audioTrack.STATE_INITIALIZED == 0)
+            {
+                Log.e(TAG, "NOT INITIALISED");
+            }
+
             while(true)
             {
                 int len = dis.readInt();
@@ -73,8 +76,7 @@ public class AudioStreamHandler implements Runnable
                 if (len > 0)
                 {
                     dis.readFully(audioData);
-                    playAudio(audioData);
-                    Log.e("Play? ", "...");
+                    audioTrack.write(audioData, 0, 1280);
                 }
             }
         } catch (Exception e)
@@ -85,6 +87,6 @@ public class AudioStreamHandler implements Runnable
 
     private void playAudio(byte[] audioData)
     {
-        audioTrack.write(audioData, 0, 1280);
+
     }
 }
