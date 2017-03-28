@@ -3,6 +3,8 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 import android.util.Log;
 import android.widget.VideoView;
 
+import com.github.mikephil.charting.charts.LineChart;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
@@ -19,13 +21,17 @@ public class GyroscopeStreamHandler implements Runnable
     Socket socket;
     String ip;
     MainActivity activity;
+    LineChart gyroscopeLineChart;
+    Graphing graphing;
 
     private String TAG = "GyroscopeStreamHandler:";
 
-    public GyroscopeStreamHandler(String ip, MainActivity activity)
+    public GyroscopeStreamHandler(String ip, MainActivity activity, LineChart gyroscopeLineChart)
     {
         this.ip = ip;
         this.activity = activity;
+        this.gyroscopeLineChart = gyroscopeLineChart;
+        graphing = new Graphing();
         socket = new Socket();
     }
 
@@ -43,7 +49,8 @@ public class GyroscopeStreamHandler implements Runnable
             while(true)
             {
                 line = is.readLine();
-                activity.updateGyroscope(line);
+                gyroscopeLineChart = graphing.update3SeriesGraph(line, gyroscopeLineChart, "Gyroscope: ");
+                activity.updateGyroscope(gyroscopeLineChart);
             }
         } catch (Exception e)
         {

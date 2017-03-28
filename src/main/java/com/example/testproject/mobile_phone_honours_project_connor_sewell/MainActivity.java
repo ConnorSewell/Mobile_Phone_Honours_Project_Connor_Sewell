@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity
 
     LineChart accelerometerLineChart;
     LineChart gyroscopeLineChart;
+    LineChart audioDataLineChart;
 
     private SurfaceView surfaceView;
     private SurfaceHolder mHolder;
@@ -113,15 +114,18 @@ public class MainActivity extends AppCompatActivity
         //setUpAccelerometerGraph();
         accelerometerLineChart = (LineChart) findViewById(R.id.accelerometer_lineGraph);
         gyroscopeLineChart = (LineChart) findViewById(R.id.gyroscope_lineGraph);
+        audioDataLineChart = (LineChart) findViewById(R.id.audioData_lineGraph);
 
         accelerometerLineChart = graphing.setUpGraph(accelerometerLineChart);
         gyroscopeLineChart = graphing.setUpGraph(gyroscopeLineChart);
+        audioDataLineChart = graphing.setUpGraph(audioDataLineChart);
 
         //int rate = AudioTrack.getMinBufferSize(44100, 2, AudioFormat.ENCODING_PCM_16BIT);
         //Log.e("Rate: ", String.valueOf(rate));
 
         accelerometerLineChart.setBackgroundColor(Color.BLACK);
         gyroscopeLineChart.setBackgroundColor(Color.BLACK);
+        audioDataLineChart.setBackgroundColor(Color.BLACK);
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
@@ -227,13 +231,17 @@ public class MainActivity extends AppCompatActivity
                         Thread videoSendReceiveThread = new Thread(ds, "Thread: Video");
                         videoSendReceiveThread.start();
 
-                        AccelerometerStreamHandler ash = new AccelerometerStreamHandler(hostIP, activity);
+                        AccelerometerStreamHandler ash = new AccelerometerStreamHandler(hostIP, activity, accelerometerLineChart);
                         Thread accelerometerSendReceiveThread = new Thread(ash, "Thread: Accelerometer");
                         accelerometerSendReceiveThread.start();
 
-                        GyroscopeStreamHandler gsh = new GyroscopeStreamHandler(hostIP, activity);
+                        GyroscopeStreamHandler gsh = new GyroscopeStreamHandler(hostIP, activity, gyroscopeLineChart);
                         Thread gyroscopeSendReceiveThread = new Thread(gsh, "Thread: Gyroscope");
                         gyroscopeSendReceiveThread.start();
+
+                        AudioLevelStreamHandler alsh = new AudioLevelStreamHandler(hostIP, activity, audioDataLineChart);
+                        Thread audioLevelSendReceiveThread = new Thread(alsh, "Thread: Audio Level");
+                        audioLevelSendReceiveThread.start();
 
                         AudioStreamHandler audioSH = new AudioStreamHandler(hostIP, activity);
                         Thread audioReceiveThread = new Thread(audioSH, "Thread: Audio");
@@ -302,14 +310,19 @@ public class MainActivity extends AppCompatActivity
                }};
 
 
-    public void updateAccelerometer(String line)
+    public void updateAccelerometer(LineChart accelerometerLineChart)
     {
-        accelerometerLineChart = graphing.updateGraph(line, accelerometerLineChart, "Accelerometer: ");
+        this.accelerometerLineChart = accelerometerLineChart;
     }
 
-    public void updateGyroscope(String line)
+    public void updateGyroscope(LineChart gyroscopeLineChart)
     {
-        gyroscopeLineChart = graphing.updateGraph(line, gyroscopeLineChart, "Gyroscope: ");
+        this.gyroscopeLineChart = gyroscopeLineChart;
+    }
+
+    public void updateAudioLevel(LineChart audioDataLineChart)
+    {
+        this.audioDataLineChart = audioDataLineChart;
     }
 
     public void setImage(byte[] imgBytes)

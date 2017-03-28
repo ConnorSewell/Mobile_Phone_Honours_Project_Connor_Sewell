@@ -72,11 +72,11 @@ public class AudioStreamHandler implements Runnable
             while(true)
             {
                 int len = dis.readInt();
-                byte[] audioData = new byte[1280];
+                byte[] audioData = new byte[7104];
                 if (len > 0)
                 {
                     dis.readFully(audioData);
-                    audioTrack.write(audioData, 0, 1280);
+                    audioTrack.write(audioData, 0, 7104);
                 }
             }
         } catch (Exception e)

@@ -60,7 +60,7 @@ public class Graphing
     long time;
     int counter = 0;
 
-    public LineChart updateGraph(String inputLine, LineChart graph, String graphName)
+    public LineChart update3SeriesGraph(String inputLine, LineChart graph, String graphName)
     {
         String[] values = inputLine.split(",");
         x = Float.parseFloat(values[0]);
@@ -99,6 +99,33 @@ public class Graphing
             //data.removeEntry(0, 0);
             data.notifyDataChanged();
             //graph.clear();
+            graph.notifyDataSetChanged();
+            graph.setVisibleXRangeMaximum(50);
+            graph.moveViewToX(data.getEntryCount());
+        }
+        return graph;
+    }
+
+    public LineChart updateSingleSeriesGraph(String inputLine, LineChart graph, String graphName)
+    {
+        String[] values = inputLine.split(",");
+        x = Float.parseFloat(values[0]);
+        time = Long.parseLong(values[1]);
+        LineData data = graph.getData();
+
+        if(data != null)
+        {
+            ILineDataSet set = data.getDataSetByIndex(0);
+
+            if(set == null)
+            {
+                set = createSet(Color.CYAN, graphName + "X");
+                data.addDataSet(set);
+            }
+
+            data.addEntry(new Entry(set.getEntryCount(), x), 0);
+            data.notifyDataChanged();
+
             graph.notifyDataSetChanged();
             graph.setVisibleXRangeMaximum(50);
             graph.moveViewToX(data.getEntryCount());

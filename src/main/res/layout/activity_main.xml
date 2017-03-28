@@ -9,7 +9,7 @@
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:screenOrientation="portrait"
+    android:screenOrientation="landscape"
     tools:context="com.example.testproject.mobile_phone_honours_project_connor_sewell.MainActivity">
 
     <android.support.v7.widget.Toolbar
@@ -25,33 +25,44 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         />
 
+
     <com.github.mikephil.charting.charts.LineChart
         android:layout_width="350dp"
-        android:layout_height="200dp"
+        android:layout_height="95.5dp"
+        android:id="@+id/gyroscope_lineGraph"
+        android:layout_marginTop="0dp"
+        android:layout_below="@+id/accelerometer_lineGraph"
+        android:layout_alignParentEnd="true">
+    </com.github.mikephil.charting.charts.LineChart>
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:layout_width="350dp"
+        android:layout_height="95.5dp"
         android:id="@+id/accelerometer_lineGraph"
-        android:layout_below="@+id/image_view"
-        android:layout_alignLeft="@+id/gyroscope_lineGraph"
-        android:layout_marginTop="11dp">
+        android:layout_below="@+id/toolbar"
+        android:layout_marginTop="0dp"
+        android:layout_alignParentEnd="true">
+    </com.github.mikephil.charting.charts.LineChart>
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:layout_width="350dp"
+        android:layout_height="95.5dp"
+        android:id="@+id/audioData_lineGraph"
+        android:layout_marginTop="0dp"
+        android:layout_below="@+id/gyroscope_lineGraph"
+        android:layout_alignParentEnd="true"
+        >
     </com.github.mikephil.charting.charts.LineChart>
 
     <ImageView
         android:id="@+id/image_view"
-        android:layout_width="350dp"
-        android:layout_height="200dp"
+        android:layout_width="247dp"
+        android:layout_height="140dp"
         android:layout_weight="1"
+        android:layout_marginTop="0dp"
         android:layout_below="@+id/toolbar"
-        android:layout_alignLeft="@+id/accelerometer_lineGraph"
-        android:layout_marginTop="11dp" />
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:layout_width="350dp"
-        android:layout_height="200dp"
-        android:id="@+id/gyroscope_lineGraph"
-        android:layout_below="@+id/accelerometer_lineGraph"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="14dp">
-    </com.github.mikephil.charting.charts.LineChart>
-
+         />
 
 </RelativeLayout>
 </ScrollView>
