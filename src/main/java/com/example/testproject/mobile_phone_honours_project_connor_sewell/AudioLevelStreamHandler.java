@@ -34,6 +34,8 @@ public class AudioLevelStreamHandler implements Runnable
         socket = new Socket();
         this.audioLevelLineChart = audioLevelLineChart;
         graphing = new Graphing();
+
+
     }
 
     BufferedReader is;
@@ -45,12 +47,13 @@ public class AudioLevelStreamHandler implements Runnable
             socket.bind(null);
             socket.connect((new InetSocketAddress(ip, 1111)), 10000);
             is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String line = is.readLine();
+            String line = null;
             Log.i(TAG, "Connected to server...");
 
             while(true)
             {
                 line = is.readLine();
+                System.out.println("READ LINE");
                 audioLevelLineChart = graphing.updateSingleSeriesGraph(line, audioLevelLineChart, "Audio Level: ");
                 activity.updateAudioLevel(audioLevelLineChart);
             }
