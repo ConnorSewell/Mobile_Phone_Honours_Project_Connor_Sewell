@@ -119,7 +119,7 @@ public class Graphing
 
             if(set == null)
             {
-                set = createSet(Color.CYAN, graphName + "X");
+                set = createSet(Color.CYAN, graphName + "value");
                 data.addDataSet(set);
             }
 

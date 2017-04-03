@@ -22,12 +22,14 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,6 +54,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -137,6 +140,20 @@ public class MainActivity extends AppCompatActivity
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
+
+        File mediaStorageDir;
+        Time currTime = new Time(Time.getCurrentTimezone());
+        currTime.setToNow();
+        mediaStorageDir = new File(Environment.getExternalStorageDirectory() + "/lol");
+
+        //mediaStorageDir = new File(Environment.getExternalStorageDirectory() + "/Sample");
+        if (!mediaStorageDir.exists())
+        {
+            if (!mediaStorageDir.mkdirs())
+            {
+                System.out.println("Failed to create directory...");
+            }
+        }
     }
 
     //https://www.youtube.com/watch?v=EZ-sNN7UWFU
@@ -160,8 +177,8 @@ public class MainActivity extends AppCompatActivity
               Log.e("..","hah");
               //Toast.makeText(this, "New Request Made", Toast.LENGTH_LONG);
               requestPeers();
-          } else {
-
+          } else
+          {
               mManager.connect(mChannel, configs.get(item.getItemId() - 1), new WifiP2pManager.ActionListener() {
                   @Override
                   public void onSuccess() {
@@ -243,9 +260,9 @@ public class MainActivity extends AppCompatActivity
                         Thread audioLevelSendReceiveThread = new Thread(alsh, "Thread: Audio Level");
                         audioLevelSendReceiveThread.start();
 
-                        AudioStreamHandler audioSH = new AudioStreamHandler(hostIP, activity);
-                        Thread audioReceiveThread = new Thread(audioSH, "Thread: Audio");
-                        audioReceiveThread.start();
+                        //AudioStreamHandler audioSH = new AudioStreamHandler(hostIP, activity);
+                        //Thread audioReceiveThread = new Thread(audioSH, "Thread: Audio");
+                        //audioReceiveThread.start();
 
                     }
                 });
@@ -279,23 +296,24 @@ public class MainActivity extends AppCompatActivity
                 peers.clear();
                 peers.addAll(peerList.getDeviceList());
 
-                for (i = 0; i < peerList.getDeviceList().size(); i++) {
-
-                        Log.i("Tag..." + ": Device: ", peers.get(i).deviceName.toString());
-                        Log.i("Tag..." + ": Address: ", peers.get(i).deviceAddress.toString());
-
+                for (i = 0; i < peerList.getDeviceList().size(); i++)
+                {
+                        WifiP2pConfig config = new WifiP2pConfig();
                         WifiP2pDevice device = peers.get(i);
                         config.deviceAddress = device.deviceAddress;
                         config.groupOwnerIntent = 0; //0~15...
                         config.wps.setup = WpsInfo.PBC;
                         configs.add(config);
 
-                        runOnUiThread(new Runnable()
+                        System.out.println("Size: " + configs.size());
+                        runOnUiThread(
+                                new Runnable()
                         {
                             @Override
                             public void run()
                             {
                                 sm.add(2, sm.size(), 0, peers.get(sm.size() - 1).deviceName);
+                                System.out.println("Size: " + sm.size() + " " + peers.get(i).deviceName);
                             }
                         });
 
