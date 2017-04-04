@@ -174,8 +174,6 @@ public class MainActivity extends AppCompatActivity
           Log.e("...", String.valueOf(item.getItemId()));
           if (item.getItemId() == 0)
           {
-              Log.e("..","hah");
-              //Toast.makeText(this, "New Request Made", Toast.LENGTH_LONG);
               requestPeers();
           } else
           {
@@ -313,7 +311,7 @@ public class MainActivity extends AppCompatActivity
                             public void run()
                             {
                                 sm.add(2, sm.size(), 0, peers.get(sm.size() - 1).deviceName);
-                                System.out.println("Size: " + sm.size() + " " + peers.get(i).deviceName);
+
                             }
                         });
 

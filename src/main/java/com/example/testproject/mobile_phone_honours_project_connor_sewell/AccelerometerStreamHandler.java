@@ -54,7 +54,7 @@ public class AccelerometerStreamHandler implements Runnable
             while(true)
             {
                 line = is.readLine();
-                accelerometerLineChart = graphing.update3SeriesGraph(line, accelerometerLineChart, "Accelerometer: ");
+                accelerometerLineChart = graphing.update3SeriesGraph(line, accelerometerLineChart, 0);
                 activity.updateAccelerometer(accelerometerLineChart);
             }
         } catch (Exception e)

@@ -3,15 +3,21 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 import android.graphics.Color;
 import android.util.Log;
 
+import com.github.mikephil.charting.*;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 /**
@@ -28,9 +34,11 @@ public class Graphing
     {
         graph.setScaleEnabled(true);
         graph.setDragEnabled(false);
-        graph.setPinchZoom(true);
+        //graph.setPinchZoom(true);
         graph.setBackgroundColor(Color.GRAY);
         graph.setDescription(null);
+        graph.setTag("Accelerometer");
+
 
         LineData graphData = new LineData();
         graphData.setValueTextColor(Color.WHITE);
@@ -40,6 +48,8 @@ public class Graphing
         Legend graphLegend = graph.getLegend();
         graphLegend.setForm(Legend.LegendForm.LINE);
         graphLegend.setTextColor(Color.WHITE);
+        graphLegend.setTextSize(7);
+        graphLegend.setXOffset(0);
 
         XAxis graphAxisX = graph.getXAxis();
         graphAxisX.setTextColor(Color.WHITE);
@@ -47,10 +57,18 @@ public class Graphing
 
         YAxis graphAxisY = graph.getAxisLeft();
         graphAxisY.setTextColor(Color.WHITE);
+        graphAxisY.setLabelCount(3);
+        graphAxisY.setValueFormatter(new MyValueFormatter());
+        //graphAxisY.setGranularity(2f);
 
+        graphAxisY.setGranularityEnabled(false);
         YAxis graphAxisYRight = graph.getAxisRight();
         graphAxisYRight.setEnabled(false);
 
+
+
+        //graph.setVisibleYRangeMaximum(5, YAxis.AxisDependency.LEFT);
+        //graph.setVisibleYRangeMinimum(0, YAxis.AxisDependency.LEFT);
         return graph;
     }
 
@@ -60,7 +78,7 @@ public class Graphing
     long time;
     int counter = 0;
 
-    public LineChart update3SeriesGraph(String inputLine, LineChart graph, String graphName)
+    public LineChart update3SeriesGraph(String inputLine, LineChart graph, int graphIndex)
     {
         String[] values = inputLine.split(",");
         x = Float.parseFloat(values[0]);
@@ -68,6 +86,9 @@ public class Graphing
         z = Float.parseFloat(values[2]);
         time = Long.parseLong(values[3]);
         LineData data = graph.getData();
+
+        ;
+        String graphInput = null;
 
         if(data != null)
         {
@@ -77,19 +98,43 @@ public class Graphing
 
             if(set == null)
             {
-                set = createSet(Color.CYAN, graphName + "X");
+                if(graphIndex == 0)
+                {
+                    graphInput = "Accel Up/Down";
+                }
+                else if(graphIndex == 1)
+                {
+                    graphInput = "Gyro Tilt Up/Down";
+                }
+                set = createSet(Color.CYAN, graphInput);
                 data.addDataSet(set);
             }
 
             if(set2 == null)
             {
-                set2 = createSet(Color.YELLOW, graphName + "Y");
+                if(graphIndex == 0)
+                {
+                    graphInput = "Accel Left/Right";
+                }
+                else if(graphIndex == 1)
+                {
+                    graphInput = "Gyro Tilt Left/Right";
+                }
+                set2 = createSet(Color.YELLOW, graphInput);
                 data.addDataSet(set2);
             }
 
             if(set3 == null)
             {
-                set3 = createSet(Color.GREEN, graphName + "Z");
+                if(graphIndex == 0)
+                {
+                    graphInput = "Accel Forwards/Backwards";
+                }
+                else if(graphIndex == 1)
+                {
+                    graphInput = "Gyro Rotate Downwards/Upwards";
+                }
+                set3 = createSet(Color.GREEN, graphInput);
                 data.addDataSet(set3);
             }
 
@@ -106,12 +151,13 @@ public class Graphing
         return graph;
     }
 
-    public LineChart updateSingleSeriesGraph(String inputLine, LineChart graph, String graphName)
+    public LineChart updateSingleSeriesGraph(String inputLine, LineChart graph, int graphIndex)
     {
         String[] values = inputLine.split(",");
         x = Float.parseFloat(values[0]);
         time = Long.parseLong(values[1]);
         LineData data = graph.getData();
+        String graphInput = null;
 
         if(data != null)
         {
@@ -119,7 +165,11 @@ public class Graphing
 
             if(set == null)
             {
-                set = createSet(Color.CYAN, graphName + "value");
+                if(graphIndex == 0)
+                {
+                    graphInput = "Audio Levels";
+                }
+                set = createSet(Color.CYAN, graphInput);
                 data.addDataSet(set);
             }
 
@@ -142,5 +192,16 @@ public class Graphing
         set.setLineWidth(0.5f);
         set.setDrawValues(false);
         return set;
+    }
+}
+
+//https://github.com/PhilJay/MPAndroidChart/wiki/The-AxisValueFormatter-interface
+//^Accessed: 04/04/2017 @ 06:30
+class MyValueFormatter implements IAxisValueFormatter
+{
+    @Override
+    public String getFormattedValue(float value, AxisBase axis)
+    {
+        return "m/s " + value;
     }
 }

@@ -54,7 +54,7 @@ public class AudioLevelStreamHandler implements Runnable
             {
                 line = is.readLine();
                 System.out.println("READ LINE");
-                audioLevelLineChart = graphing.updateSingleSeriesGraph(line, audioLevelLineChart, "Audio Level: ");
+                audioLevelLineChart = graphing.updateSingleSeriesGraph(line, audioLevelLineChart, 0);
                 activity.updateAudioLevel(audioLevelLineChart);
             }
         } catch (Exception e)

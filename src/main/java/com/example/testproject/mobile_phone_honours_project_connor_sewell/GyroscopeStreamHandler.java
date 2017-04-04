@@ -49,7 +49,7 @@ public class GyroscopeStreamHandler implements Runnable
             while(true)
             {
                 line = is.readLine();
-                gyroscopeLineChart = graphing.update3SeriesGraph(line, gyroscopeLineChart, "Gyroscope: ");
+                gyroscopeLineChart = graphing.update3SeriesGraph(line, gyroscopeLineChart, 1);
                 activity.updateGyroscope(gyroscopeLineChart);
             }
         } catch (Exception e)
