@@ -10,6 +10,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled = true
     }
     buildTypes {
         release {
@@ -34,6 +35,13 @@ dependencies {
 
 dependencies {
             compile 'com.google.android.gms:play-services:10.0.1'
+        }
+
+dependencies
+        {
+            //https://github.com/intuit/sdp
+            //^Accessed: 06/04/2017 @ 08:16. Used throughout xml for layout (/res/layout/activity_main.xml) for sdp units
+            compile 'com.intuit.sdp:sdp-android:1.0.4'
         }
 
 

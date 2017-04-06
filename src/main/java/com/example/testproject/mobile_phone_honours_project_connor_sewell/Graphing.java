@@ -2,6 +2,7 @@ package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 
 import android.graphics.Color;
 import android.util.Log;
+import android.view.View;
 
 import com.github.mikephil.charting.*;
 import com.github.mikephil.charting.charts.LineChart;
@@ -14,6 +15,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
@@ -30,7 +32,7 @@ import java.util.List;
 
 public class Graphing
 {
-    public LineChart setUpGraph(LineChart graph)
+    public LineChart setUpGraph(LineChart graph, int type)
     {
         graph.setScaleEnabled(true);
         graph.setDragEnabled(false);
@@ -38,7 +40,6 @@ public class Graphing
         graph.setBackgroundColor(Color.GRAY);
         graph.setDescription(null);
         graph.setTag("Accelerometer");
-
 
         LineData graphData = new LineData();
         graphData.setValueTextColor(Color.WHITE);
@@ -57,8 +58,20 @@ public class Graphing
 
         YAxis graphAxisY = graph.getAxisLeft();
         graphAxisY.setTextColor(Color.WHITE);
-        graphAxisY.setLabelCount(3);
-        graphAxisY.setValueFormatter(new MyValueFormatter());
+
+        if(type == 0)
+        {
+            graphAxisY.setValueFormatter(new MetresSecondSquaredFormatter());
+            graphAxisY.setLabelCount(3, true);
+        }
+        else if(type == 1)
+        {
+            graphAxisY.setValueFormatter(new AudioPercentageFormatter());
+        }
+
+        graphAxisX.setLabelCount(2, true);
+        graphAxisX.setValueFormatter(new SecondsFormatter());
+
         //graphAxisY.setGranularity(2f);
 
         graphAxisY.setGranularityEnabled(false);
@@ -78,16 +91,15 @@ public class Graphing
     long time;
     int counter = 0;
 
-    public LineChart update3SeriesGraph(String inputLine, LineChart graph, int graphIndex)
+    public LineChart update3SeriesGraph(float x, float y, float z, float timeStamp, LineChart graph, int graphIndex)
     {
-        String[] values = inputLine.split(",");
-        x = Float.parseFloat(values[0]);
-        y = Float.parseFloat(values[1]);
-        z = Float.parseFloat(values[2]);
-        time = Long.parseLong(values[3]);
+        //String[] values = inputLine.split(",");
+        //x = Float.parseFloat(values[0]);
+        //y = Float.parseFloat(values[1]);
+        //z = Float.parseFloat(values[2]);
+        //time = Long.parseLong(values[3]);
         LineData data = graph.getData();
 
-        ;
         String graphInput = null;
 
         if(data != null)
@@ -136,26 +148,41 @@ public class Graphing
                 }
                 set3 = createSet(Color.GREEN, graphInput);
                 data.addDataSet(set3);
+
             }
 
-            data.addEntry(new Entry(set.getEntryCount(), x), 0);
-            data.addEntry(new Entry(set2.getEntryCount(), y), 1);
-            data.addEntry(new Entry(set3.getEntryCount(), z), 2);
-            //data.removeEntry(0, 0);
-            data.notifyDataChanged();
-            //graph.clear();
+            data.addEntry(new Entry(timeStamp, x), 0);
+            data.addEntry(new Entry(timeStamp, y), 1);
+            data.addEntry(new Entry(timeStamp, z), 2);
+
+            if(counter < 49)
+            {
+                counter++;
+            }
+
+            if(counter == 49)
+            {
+                //data.getDataSetByIndex(0).removeFirst();
+                //data.getDataSetByIndex(1).removeFirst();
+                //data.getDataSetByIndex(2).removeFirst();
+            }
             graph.notifyDataSetChanged();
-            graph.setVisibleXRangeMaximum(50);
-            graph.moveViewToX(data.getEntryCount());
+            graph.setVisibleXRangeMaximum(30);
+            graph.moveViewToX(data.getDataSetByIndex(0).getEntryCount() - 1);
         }
         return graph;
     }
 
-    public LineChart updateSingleSeriesGraph(String inputLine, LineChart graph, int graphIndex)
+    public LineChart updateYAxisLabels(LineChart graph, int labelCount, int min, int max, boolean strictLabel)
     {
-        String[] values = inputLine.split(",");
-        x = Float.parseFloat(values[0]);
-        time = Long.parseLong(values[1]);
+        graph.getAxisLeft().setAxisMaximum(max);
+        graph.getAxisLeft().setAxisMinimum(min);
+        graph.getAxisLeft().setLabelCount(labelCount, strictLabel);
+        return graph;
+    }
+
+    public LineChart updateSingleSeriesGraph(LineChart graph, int graphIndex, float audioVal, float timeStamp)
+    {
         LineData data = graph.getData();
         String graphInput = null;
 
@@ -173,11 +200,11 @@ public class Graphing
                 data.addDataSet(set);
             }
 
-            data.addEntry(new Entry(set.getEntryCount(), x), 0);
+            data.addEntry(new Entry(timeStamp, audioVal), 0);
             data.notifyDataChanged();
 
             graph.notifyDataSetChanged();
-            graph.setVisibleXRangeMaximum(50);
+            graph.setVisibleXRangeMaximum(30);
             graph.moveViewToX(data.getEntryCount());
         }
         return graph;
@@ -197,11 +224,52 @@ public class Graphing
 
 //https://github.com/PhilJay/MPAndroidChart/wiki/The-AxisValueFormatter-interface
 //^Accessed: 04/04/2017 @ 06:30
-class MyValueFormatter implements IAxisValueFormatter
-{
+class AudioPercentageFormatter implements IAxisValueFormatter {
     @Override
     public String getFormattedValue(float value, AxisBase axis)
     {
-        return "m/s " + value;
+        if (value != 0) {
+            if (value > 0) {
+                return ((double) (value / 32767) * 100 + " %");
+            }
+            return ((double) (value / 32768) * 100 + " %");
+        }
+        return String.valueOf(value);
+    }
+}
+
+
+//https://github.com/PhilJay/MPAndroidChart/wiki/The-AxisValueFormatter-interface
+//^Accessed: 04/04/2017 @ 06:30
+class MetresSecondSquaredFormatter implements IAxisValueFormatter
+{
+
+    private DecimalFormat mFormat;
+
+    public MetresSecondSquaredFormatter() {
+        mFormat = new DecimalFormat("###,###,##0.0"); // use one decimal
+    }
+
+
+    @Override
+    public String getFormattedValue(float value, AxisBase axis) {
+        if (value != 0) {
+            if (value > 0) {
+                return "m/s  " + mFormat.format(value);
+            }
+            return "m/s " + mFormat.format(value);
+        }
+        return mFormat.format(value);
+    }
+}
+
+
+//https://github.com/PhilJay/MPAndroidChart/wiki/The-AxisValueFormatter-interface
+//^Accessed: 04/04/2017 @ 06:30
+class SecondsFormatter implements IAxisValueFormatter
+{
+    @Override
+    public String getFormattedValue(float value, AxisBase axis) {
+        return String.valueOf((int)value + " Secs");
     }
 }

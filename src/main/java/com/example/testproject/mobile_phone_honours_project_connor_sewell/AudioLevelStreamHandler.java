@@ -26,6 +26,8 @@ public class AudioLevelStreamHandler implements Runnable
 
     private String TAG = "ALStreamHandler: ";
     private Graphing graphing;
+    private int valsPerSec = 5;
+    private int valCounter = 10;
 
     public AudioLevelStreamHandler(String ip, MainActivity activity, LineChart audioLevelLineChart)
     {
@@ -34,7 +36,10 @@ public class AudioLevelStreamHandler implements Runnable
         socket = new Socket();
         this.audioLevelLineChart = audioLevelLineChart;
         graphing = new Graphing();
+    }
 
+    public void setValsPerSec(int valsPerSec)
+    {
 
     }
 
@@ -50,12 +55,39 @@ public class AudioLevelStreamHandler implements Runnable
             String line = null;
             Log.i(TAG, "Connected to server...");
 
+            int audioVal = 0; long timestamp = 0;
+            float audioValAccumulator = 0; long timeStampAccumulator = 0;
+
+            int counter = 0;
+            int valsReceived = 0;
+
+            audioLevelLineChart = graphing.updateYAxisLabels(audioLevelLineChart, 2, 0, 32767, true);
+
             while(true)
             {
                 line = is.readLine();
-                System.out.println("READ LINE");
-                audioLevelLineChart = graphing.updateSingleSeriesGraph(line, audioLevelLineChart, 0);
-                activity.updateAudioLevel(audioLevelLineChart);
+                String[] vals = line.split(",");
+                audioVal = Integer.parseInt(vals[0]);
+                timestamp = Long.parseLong(vals[1]);
+                if(audioVal > 0) {
+                    audioValAccumulator += audioVal;
+                    timeStampAccumulator += timestamp;
+                    valsReceived++;
+                }
+                counter++;
+
+                if(counter == valCounter)
+                {
+                    float averagedAudioVal = audioValAccumulator/valsReceived;
+                    float averagedTimeStamp = (timeStampAccumulator/valsReceived)/1000000000;
+                    audioLevelLineChart = graphing.updateSingleSeriesGraph(audioLevelLineChart, 0, averagedAudioVal, averagedTimeStamp);
+                    activity.updateAudioLevel(audioLevelLineChart);
+                    //System.out.println("Averaged was: " + averagedTimeStamp);
+                    audioValAccumulator = 0;
+                    timeStampAccumulator = 0;
+                    counter = 0;
+                    valsReceived = 0;
+                }
             }
         } catch (Exception e)
         {

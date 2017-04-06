@@ -38,8 +38,10 @@ import android.view.SubMenu;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
+import android.widget.AbsoluteLayout;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -100,6 +102,9 @@ public class MainActivity extends AppCompatActivity
     PrintWriter optionWriter;
     Graphing graphing = new Graphing();
 
+    private String manualIPAddress = null;
+    private int wiFiDirectActiveState = 0;
+
     SubMenu sm;
     Menu menu;
 
@@ -114,17 +119,14 @@ public class MainActivity extends AppCompatActivity
 
         iv = (ImageView) findViewById(R.id.image_view);
         iv.setBackgroundColor(Color.GRAY);
-        //setUpAccelerometerGraph();
+
         accelerometerLineChart = (LineChart) findViewById(R.id.accelerometer_lineGraph);
         gyroscopeLineChart = (LineChart) findViewById(R.id.gyroscope_lineGraph);
         audioDataLineChart = (LineChart) findViewById(R.id.audioData_lineGraph);
 
-        accelerometerLineChart = graphing.setUpGraph(accelerometerLineChart);
-        gyroscopeLineChart = graphing.setUpGraph(gyroscopeLineChart);
-        audioDataLineChart = graphing.setUpGraph(audioDataLineChart);
-
-        //int rate = AudioTrack.getMinBufferSize(44100, 2, AudioFormat.ENCODING_PCM_16BIT);
-        //Log.e("Rate: ", String.valueOf(rate));
+        accelerometerLineChart = graphing.setUpGraph(accelerometerLineChart, 0);
+        gyroscopeLineChart = graphing.setUpGraph(gyroscopeLineChart, 0);
+        audioDataLineChart = graphing.setUpGraph(audioDataLineChart, 1);
 
         accelerometerLineChart.setBackgroundColor(Color.BLACK);
         gyroscopeLineChart.setBackgroundColor(Color.BLACK);
@@ -156,6 +158,17 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void setWiFiDirectActiveState(int state)
+    {
+        wiFiDirectActiveState = state;
+
+        if(state == 1)
+        {
+            Toast.makeText(this, "Valid WiFi Direct Connection", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
     //https://www.youtube.com/watch?v=EZ-sNN7UWFU
     //^Used for toolbar options. Accessed 09/03/2017 @ 18:00 Also used for menu.xml in menu folder in res folder
     @Override
@@ -167,7 +180,17 @@ public class MainActivity extends AppCompatActivity
         }
         else if(item.getItemId() == R.id.startOption)
         {
-            startStreams();
+            if(wiFiDirectActiveState == 1) {
+                startStreams();
+            }
+            else if(wiFiDirectActiveState == 2)
+            {
+                Toast.makeText(this, "Please connect before continuing", Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                Toast.makeText(this, "Did not receive wifi direct connection state. Waiting may fix this problem - recommend disconnecting then reconnecting", Toast.LENGTH_LONG).show();
+            }
         }
         else if(item.getGroupId() == 2)
       {
@@ -201,7 +224,7 @@ public class MainActivity extends AppCompatActivity
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.menu, menu);
         this.menu = menu;
-        menu.getItem(1).setEnabled(false);
+        //menu.getItem(1).setEnabled(false);
         sm = menu.getItem(2).getSubMenu();
         sm.add(2, 0, 0, "Rediscover");
         setup = true;

@@ -40,6 +40,9 @@ public class AccelerometerStreamHandler implements Runnable
     }
 
     BufferedReader is;
+
+    int valCounter = 15;
+    int counter = 0;
     @Override
     public void run()
     {
@@ -49,13 +52,41 @@ public class AccelerometerStreamHandler implements Runnable
             socket.connect((new InetSocketAddress(ip, 7777)), 10000);
             is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String line = is.readLine();
-            Log.i(TAG, "Connected to server...");
+
+            float accumulatedX = 0, accumulatedY = 0, accumulatedZ = 0, accumulatedTimestamp = 0;
+            float x = 0, y = 0, z = 0;
+            long timestamp = 0;
 
             while(true)
             {
                 line = is.readLine();
-                accelerometerLineChart = graphing.update3SeriesGraph(line, accelerometerLineChart, 0);
-                activity.updateAccelerometer(accelerometerLineChart);
+                String[] sensorVals = line.split(",");
+                x = Float.parseFloat(sensorVals[0]);
+                y = Float.parseFloat(sensorVals[1]);
+                z = Float.parseFloat(sensorVals[2]);
+                timestamp = Long.parseLong(sensorVals[3]);
+                counter++;
+
+                accumulatedX+=x;
+                accumulatedY+=y;
+                accumulatedZ+=z;
+                accumulatedTimestamp+=timestamp;
+
+                if(counter == valCounter)
+                {
+                    float averagedX = accumulatedX/valCounter;
+                    float averagedY = accumulatedY/valCounter;
+                    float averagedZ = accumulatedZ/valCounter;
+                    float averagedTimestamp = (accumulatedTimestamp/valCounter)/1000000000;
+                    accelerometerLineChart = graphing.update3SeriesGraph(averagedX, averagedY, averagedZ, averagedTimestamp, accelerometerLineChart, 0);
+                    activity.updateAccelerometer(accelerometerLineChart);
+                    accumulatedX = 0;
+                    accumulatedY = 0;
+                    accumulatedZ = 0;
+                    accumulatedTimestamp = 0;
+                    counter = 0;
+                }
+
             }
         } catch (Exception e)
         {
