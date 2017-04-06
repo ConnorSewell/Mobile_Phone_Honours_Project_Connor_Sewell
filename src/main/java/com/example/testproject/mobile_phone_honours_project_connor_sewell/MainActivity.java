@@ -1,8 +1,10 @@
 package com.example.testproject.mobile_phone_honours_project_connor_sewell;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -29,6 +31,7 @@ import android.os.ParcelFileDescriptor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
@@ -40,6 +43,7 @@ import android.view.SurfaceView;
 import android.view.Window;
 import android.widget.AbsoluteLayout;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -66,6 +70,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static android.R.attr.duration;
+import static android.R.id.input;
 
 /**https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
  *^Used for network related code (WifiP2pManager, Channel, BroadcastReceiver...). Accessed 08/02/2017 @ 14:55
@@ -98,12 +103,13 @@ public class MainActivity extends AppCompatActivity
     private VideoView vd;
     WifiP2pConfig config = new WifiP2pConfig();
 
-    int tester;
     PrintWriter optionWriter;
     Graphing graphing = new Graphing();
 
-    private String manualIPAddress = null;
-    private int wiFiDirectActiveState = 0;
+    private int wifiState = 0;
+    private String wifiIPAddress;
+    private String wifiDirecthostIP;
+    private boolean streamStarted = false;
 
     SubMenu sm;
     Menu menu;
@@ -156,11 +162,12 @@ public class MainActivity extends AppCompatActivity
                 System.out.println("Failed to create directory...");
             }
         }
+
     }
 
-    public void setWiFiDirectActiveState(int state)
+    public void wifiState(int state)
     {
-        wiFiDirectActiveState = state;
+        wifiState = state;
 
         if(state == 1)
         {
@@ -174,27 +181,30 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-      if(item.getItemId() == R.id.peersOption)
+      if(item.getItemId() == R.id.wifiIPEntry)
         {
-            //connectDevices();
+            ipDialogue();
         }
         else if(item.getItemId() == R.id.startOption)
         {
-            if(wiFiDirectActiveState == 1) {
-                startStreams();
-            }
-            else if(wiFiDirectActiveState == 2)
+            if(streamStarted)
             {
-                Toast.makeText(this, "Please connect before continuing", Toast.LENGTH_SHORT).show();
+                stopStreams();
             }
-            else
-            {
-                Toast.makeText(this, "Did not receive wifi direct connection state. Waiting may fix this problem - recommend disconnecting then reconnecting", Toast.LENGTH_LONG).show();
+            else {
+                if (wifiState == 1) {
+                    startStreams(wifiDirecthostIP, 0);
+                    menu.getItem(1).setTitle("Stop");
+                } else if (wifiState == 2) {
+                    startStreams(wifiIPAddress, 1);
+                } else if (wifiState == 3) {
+                    Toast.makeText(this, "Please connect before continuing... If error persists, please restart connection",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         }
         else if(item.getGroupId() == 2)
       {
-          Log.e("...", String.valueOf(item.getItemId()));
           if (item.getItemId() == 0)
           {
               requestPeers();
@@ -202,8 +212,10 @@ public class MainActivity extends AppCompatActivity
           {
               mManager.connect(mChannel, configs.get(item.getItemId() - 1), new WifiP2pManager.ActionListener() {
                   @Override
-                  public void onSuccess() {
+                  public void onSuccess()
+                  {
                       Log.i("INFO", "Connection made");
+                      Toast.makeText(activity, "WiFi direct connection established", Toast.LENGTH_LONG).show();
                   }
 
                   @Override
@@ -217,6 +229,37 @@ public class MainActivity extends AppCompatActivity
 
         return true;
     }
+
+    //http://stackoverflow.com/questions/10903754/input-text-dialog-android
+    //^ Used for below method (dialogue box). Accessed: 06/04/2017 @ 18:11
+    private void ipDialogue()
+    {
+
+        AlertDialog.Builder alertDialogueBuilder = new AlertDialog.Builder(this);
+        alertDialogueBuilder.setTitle("Enter IP address of device on WiFi network");
+        final EditText inputArea = new EditText(this);
+        inputArea.setInputType(InputType.TYPE_CLASS_TEXT);
+        alertDialogueBuilder.setView(inputArea);
+
+        alertDialogueBuilder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                wifiIPAddress = inputArea.getText().toString();
+                wifiState = 2;
+            }
+        });
+        alertDialogueBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        alertDialogueBuilder.show();
+    }
+
+
     boolean setup = false;
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -226,7 +269,8 @@ public class MainActivity extends AppCompatActivity
         this.menu = menu;
         //menu.getItem(1).setEnabled(false);
         sm = menu.getItem(2).getSubMenu();
-        sm.add(2, 0, 0, "Rediscover");
+        sm.add(2, 0, 0, "Important Info");
+        sm.add(2, 1, 0, "Rediscover");
         setup = true;
         requestPeers();
         return true;
@@ -252,7 +296,64 @@ public class MainActivity extends AppCompatActivity
         mManager.requestPeers(mChannel, peerListListener);
     }
 
-    private void startStreams()
+    VideoStreamHandler ds;
+    AccelerometerStreamHandler ash;
+    GyroscopeStreamHandler gsh;
+    AudioLevelStreamHandler alsh;
+
+    Thread videoSendReceiveThread;
+    Thread accelerometerSendReceiveThread;
+    Thread gyroscopeSendReceiveThread;
+    Thread audioLevelSendReceiveThread
+
+    private void startStreams(String IP, int connectionType)
+    {
+        ds = new VideoStreamHandler(IP, activity);
+        videoSendReceiveThread = new Thread(ds, "Thread: Video");
+        videoSendReceiveThread.start();
+
+        ash = new AccelerometerStreamHandler(IP, activity, accelerometerLineChart);
+        accelerometerSendReceiveThread = new Thread(ash, "Thread: Accelerometer");
+        accelerometerSendReceiveThread.start();
+
+        gsh = new GyroscopeStreamHandler(IP, activity, gyroscopeLineChart);
+        gyroscopeSendReceiveThread = new Thread(gsh, "Thread: Gyroscope");
+        gyroscopeSendReceiveThread.start();
+
+        alsh = new AudioLevelStreamHandler(IP, activity, audioDataLineChart);
+        audioLevelSendReceiveThread = new Thread(alsh, "Thread: Audio Level");
+        audioLevelSendReceiveThread.start();
+
+        streamStarted = true;
+        //AudioStreamHandler audioSH = new AudioStreamHandler(hostIP, activity);
+        //Thread audioReceiveThread = new Thread(audioSH, "Thread: Audio");
+        //audioReceiveThread.start();
+
+    }
+
+    private void stopStreams()
+    {
+        streamStarted = false;
+
+        videoSendReceiveThread.interrupt();
+        videoSendReceiveThread = null;
+
+        accelerometerSendReceiveThread.interrupt();
+        accelerometerSendReceiveThread = null;
+
+        gyroscopeSendReceiveThread.interrupt();
+        gyroscopeSendReceiveThread = null;
+
+        audioLevelSendReceiveThread.interrupt();
+        audioLevelSendReceiveThread = null;
+
+        ds.closeSocket();
+        ash.closeSocket();
+        alsh.closeSocket();
+        gsh.closeSocket();
+    }
+
+    private void getWiFiGroupOwnerIP()
     {
         //started = true;
         Log.e("Inside Netowrk info, ", "...");
@@ -263,28 +364,7 @@ public class MainActivity extends AppCompatActivity
                     public void onConnectionInfoAvailable(WifiP2pInfo info)
                     {
                         InetAddress groupOwnerAddress = info.groupOwnerAddress;
-                        String hostIP = groupOwnerAddress.getHostAddress();
-
-                        VideoStreamHandler ds = new VideoStreamHandler(hostIP, activity);
-                        Thread videoSendReceiveThread = new Thread(ds, "Thread: Video");
-                        videoSendReceiveThread.start();
-
-                        AccelerometerStreamHandler ash = new AccelerometerStreamHandler(hostIP, activity, accelerometerLineChart);
-                        Thread accelerometerSendReceiveThread = new Thread(ash, "Thread: Accelerometer");
-                        accelerometerSendReceiveThread.start();
-
-                        GyroscopeStreamHandler gsh = new GyroscopeStreamHandler(hostIP, activity, gyroscopeLineChart);
-                        Thread gyroscopeSendReceiveThread = new Thread(gsh, "Thread: Gyroscope");
-                        gyroscopeSendReceiveThread.start();
-
-                        AudioLevelStreamHandler alsh = new AudioLevelStreamHandler(hostIP, activity, audioDataLineChart);
-                        Thread audioLevelSendReceiveThread = new Thread(alsh, "Thread: Audio Level");
-                        audioLevelSendReceiveThread.start();
-
-                        //AudioStreamHandler audioSH = new AudioStreamHandler(hostIP, activity);
-                        //Thread audioReceiveThread = new Thread(audioSH, "Thread: Audio");
-                        //audioReceiveThread.start();
-
+                        wifiDirecthostIP = groupOwnerAddress.getHostAddress();
                     }
                 });
     }

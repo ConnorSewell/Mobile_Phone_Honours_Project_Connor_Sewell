@@ -7,13 +7,14 @@ https://www.youtube.com/watch?v=EZ-sNN7UWFU
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/toggleOption"
-        android:title="@string/menu_toggle"
-        app:showAsAction="always"
-        />
-    <item
         android:id="@+id/startOption"
         android:title="@string/menu_start"
+        app:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/wifiIPEntry"
+        android:title="@string/menu_wiFi"
         app:showAsAction="always"
         />
     <item

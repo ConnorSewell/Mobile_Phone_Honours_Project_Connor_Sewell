@@ -1,8 +1,8 @@
 <resources>
 
     <string name="app_name">Visualiser</string>
-    <string name="menu_toggle">Toggle</string>
-    <string name="menu_peers">Peers</string>
+    <string name="menu_wiFi">WiFi</string>
+    <string name="menu_peers">WiFi Direct</string>
     <string name="menu_start">Start</string>
 
 </resources>

@@ -54,6 +54,18 @@ public class VideoStreamHandler implements Runnable
         socket = new Socket();
     }
 
+    public void closeSocket()
+    {
+        try {
+            socket.close();
+        }
+        catch(IOException e)
+        {
+            Log.e(TAG, "Error occurred when closing socket");
+        }
+    }
+
+
     InputStream is;
     DataInputStream dis;
     ImageView iv;

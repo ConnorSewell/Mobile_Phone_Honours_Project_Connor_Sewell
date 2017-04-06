@@ -104,11 +104,11 @@ public class NetworkManager extends BroadcastReceiver
             if (networkInfo.isConnected() && !devicesConnected)
             {
                 devicesConnected = true;
-                mActivity.setWiFiDirectActiveState(1);
+                mActivity.wifiState(1);
             }
             else
             {
-                mActivity.setWiFiDirectActiveState(2);
+                mActivity.wifiState(3);
                 devicesConnected = false;
             }
             Log.e("Connection changed", "...");

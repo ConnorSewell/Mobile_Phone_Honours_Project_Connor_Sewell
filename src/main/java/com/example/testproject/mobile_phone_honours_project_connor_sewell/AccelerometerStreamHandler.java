@@ -7,6 +7,7 @@ import android.widget.VideoView;
 import com.github.mikephil.charting.charts.LineChart;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
@@ -37,6 +38,17 @@ public class AccelerometerStreamHandler implements Runnable
         socket = new Socket();
         this.accelerometerLineChart = accelerometerLineChart;
         graphing = new Graphing();
+    }
+
+    public void closeSocket()
+    {
+        try {
+            socket.close();
+        }
+        catch(IOException e)
+        {
+            Log.e(TAG, "Error occurred when closing socket");
+        }
     }
 
     BufferedReader is;
