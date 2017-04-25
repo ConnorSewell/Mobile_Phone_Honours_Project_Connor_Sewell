@@ -32,7 +32,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.format.Time;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -59,6 +62,9 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.gms.vision.text.Text;
+
+import junit.framework.Test;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -123,6 +129,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        TextView legendText;
+
         //https://developer.android.com/training/system-ui/navigation.html
         //^ Accessed: 09/04/2017 @ 02:24. Used to manipulate navigation bar.
         View decorView = getWindow().getDecorView();
@@ -146,8 +154,31 @@ public class MainActivity extends AppCompatActivity
         accelerometerLineChart.setBackgroundColor(Color.BLACK);
         gyroscopeLineChart.setBackgroundColor(Color.BLACK);
         audioDataLineChart.setBackgroundColor(Color.BLACK);
-
         audioDataLineChart.invalidate();
+
+
+        legendText = (TextView) findViewById(R.id.audioLegend);
+        legendText.setText("Audio Data");
+        legendText.setTextColor(Color.CYAN);
+
+        //http://stackoverflow.com/questions/4897349/android-coloring-part-of-a-string-using-textview-settext
+        //^ Used for below code that colours part of strings. Used for graph legends. Accessed 25/04/2017 @ 03:55
+        SpannableStringBuilder sb = new SpannableStringBuilder("Accelerometer X    Accelerometer Y    Accelerometer Z");
+        final ForegroundColorSpan cyan = new ForegroundColorSpan(Color.CYAN);
+        final ForegroundColorSpan yellow = new ForegroundColorSpan(Color.YELLOW);
+        final ForegroundColorSpan green = new ForegroundColorSpan(Color.GREEN);
+        sb.setSpan(cyan, 0, 15, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        sb.setSpan(yellow, 19, 34, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        sb.setSpan(green, 38, 53, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        legendText = (TextView) findViewById(R.id.accelerometerLegend);
+        legendText.setText(sb);
+
+        sb = new SpannableStringBuilder("Gyroscope X    Gyroscope Y    Gyroscope Z");
+        sb.setSpan(cyan, 0, 11, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        sb.setSpan(yellow, 15, 26, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        sb.setSpan(green, 30, 41, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        legendText = (TextView) findViewById(R.id.gyroscopeLegend);
+        legendText.setText(sb);
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
