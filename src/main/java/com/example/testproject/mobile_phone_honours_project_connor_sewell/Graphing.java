@@ -34,8 +34,8 @@ public class Graphing
 {
     public LineChart setUpGraph(LineChart graph, int type)
     {
-        graph.setScaleEnabled(true);
-        graph.setDragEnabled(false);
+        //graph.setScaleEnabled(true);
+        graph.setDragEnabled(true);
         //graph.setPinchZoom(true);
         graph.setBackgroundColor(Color.GRAY);
         graph.setDescription(null);
@@ -47,12 +47,16 @@ public class Graphing
         graph.setData(graphData);
 
         Legend graphLegend = graph.getLegend();
-        graphLegend.setForm(Legend.LegendForm.LINE);
-        graphLegend.setTextColor(Color.WHITE);
-        graphLegend.setTextSize(7);
-        graphLegend.setXOffset(0);
+
+        graphLegend.setDrawInside(true);
+        graphLegend.setEnabled(false);
+        //graphLegend.setForm(Legend.LegendForm.LINE);
+        //graphLegend.setTextColor(Color.WHITE);
+        //graphLegend.setTextSize(7);
+        //graphLegend.setXOffset(0);
 
         XAxis graphAxisX = graph.getXAxis();
+        graphAxisX.setXOffset(1);
         graphAxisX.setTextColor(Color.WHITE);
         graphAxisX.setAvoidFirstLastClipping(true);
 
@@ -65,6 +69,11 @@ public class Graphing
             graphAxisY.setLabelCount(3, true);
         }
         else if(type == 1)
+        {
+            graphAxisY.setValueFormatter(new RadiansPerSecondFormatter());
+            graphAxisY.setLabelCount(3, true);
+        }
+        else if(type == 2)
         {
             graphAxisY.setValueFormatter(new AudioPercentageFormatter());
         }
@@ -91,84 +100,78 @@ public class Graphing
     long time;
     int counter = 0;
 
-    public LineChart update3SeriesGraph(float x, float y, float z, float timeStamp, LineChart graph, int graphIndex)
+    public LineChart update3SeriesGraph(List<Float> xVals, List<Float> yVals, List<Float> zVals, List<Float> timeStamps, LineChart graph, int graphIndex)
     {
-        //String[] values = inputLine.split(",");
-        //x = Float.parseFloat(values[0]);
-        //y = Float.parseFloat(values[1]);
-        //z = Float.parseFloat(values[2]);
-        //time = Long.parseLong(values[3]);
-        LineData data = graph.getData();
+        try {
+            //String[] values = inputLine.split(",");
+            //x = Float.parseFloat(values[0]);
+            //y = Float.parseFloat(values[1]);
+            //z = Float.parseFloat(values[2]);
+            //time = Long.parseLong(values[3]);
+            LineData data = graph.getData();
 
-        String graphInput = null;
+            String graphInput = null;
 
-        if(data != null)
+            if (data != null) {
+                ILineDataSet set = data.getDataSetByIndex(0);
+                ILineDataSet set2 = data.getDataSetByIndex(1);
+                ILineDataSet set3 = data.getDataSetByIndex(2);
+
+                if (set == null) {
+                    if (graphIndex == 0) {
+                        graphInput = "Accel Up/Down";
+                    } else if (graphIndex == 1) {
+                        graphInput = "Gyro Tilt Up/Down";
+                    }
+                    set = createSet(Color.CYAN, graphInput);
+                    data.addDataSet(set);
+                }
+
+                if (set2 == null) {
+                    if (graphIndex == 0) {
+                        graphInput = "Accel Left/Right";
+                    } else if (graphIndex == 1) {
+                        graphInput = "Gyro Tilt Left/Right";
+                    }
+                    set2 = createSet(Color.YELLOW, graphInput);
+                    data.addDataSet(set2);
+                }
+
+                if (set3 == null) {
+                    if (graphIndex == 0) {
+                        graphInput = "Accel Forwards/Backwards";
+                    } else if (graphIndex == 1) {
+                        graphInput = "Gyro Rotate Downwards/Upwards";
+                    }
+                    set3 = createSet(Color.GREEN, graphInput);
+                    data.addDataSet(set3);
+
+                }
+
+                for (int i = 0; i < xVals.size(); i++) {
+                    data.addEntry(new Entry(timeStamps.get(i), xVals.get(i)), 0);
+                    data.addEntry(new Entry(timeStamps.get(i), yVals.get(i)), 1);
+                    data.addEntry(new Entry(timeStamps.get(i), zVals.get(i)), 2);
+                }
+
+
+                if (counter < 49) {
+                    counter++;
+                }
+
+                if (counter == 49) {
+                    // data.getDataSetByIndex(0).removeFirst();
+                    //data.getDataSetByIndex(1).removeFirst();
+                    //data.getDataSetByIndex(2).removeFirst();
+                }
+                graph.notifyDataSetChanged();
+                graph.setVisibleXRangeMaximum(5);
+                graph.moveViewToX(data.getDataSetByIndex(0).getEntryCount() - 1);
+            }
+        }
+        catch(Exception e)
         {
-            ILineDataSet set = data.getDataSetByIndex(0);
-            ILineDataSet set2 = data.getDataSetByIndex(1);
-            ILineDataSet set3 = data.getDataSetByIndex(2);
-
-            if(set == null)
-            {
-                if(graphIndex == 0)
-                {
-                    graphInput = "Accel Up/Down";
-                }
-                else if(graphIndex == 1)
-                {
-                    graphInput = "Gyro Tilt Up/Down";
-                }
-                set = createSet(Color.CYAN, graphInput);
-                data.addDataSet(set);
-            }
-
-            if(set2 == null)
-            {
-                if(graphIndex == 0)
-                {
-                    graphInput = "Accel Left/Right";
-                }
-                else if(graphIndex == 1)
-                {
-                    graphInput = "Gyro Tilt Left/Right";
-                }
-                set2 = createSet(Color.YELLOW, graphInput);
-                data.addDataSet(set2);
-            }
-
-            if(set3 == null)
-            {
-                if(graphIndex == 0)
-                {
-                    graphInput = "Accel Forwards/Backwards";
-                }
-                else if(graphIndex == 1)
-                {
-                    graphInput = "Gyro Rotate Downwards/Upwards";
-                }
-                set3 = createSet(Color.GREEN, graphInput);
-                data.addDataSet(set3);
-
-            }
-
-            data.addEntry(new Entry(timeStamp, x), 0);
-            data.addEntry(new Entry(timeStamp, y), 1);
-            data.addEntry(new Entry(timeStamp, z), 2);
-
-            if(counter < 49)
-            {
-                counter++;
-            }
-
-            if(counter == 49)
-            {
-                //data.getDataSetByIndex(0).removeFirst();
-                //data.getDataSetByIndex(1).removeFirst();
-                //data.getDataSetByIndex(2).removeFirst();
-            }
-            graph.notifyDataSetChanged();
-            graph.setVisibleXRangeMaximum(30);
-            graph.moveViewToX(data.getDataSetByIndex(0).getEntryCount() - 1);
+            Log.e("Graph Update: ", "Likely updating too quickly");
         }
         return graph;
     }
@@ -181,31 +184,38 @@ public class Graphing
         return graph;
     }
 
-    public LineChart updateSingleSeriesGraph(LineChart graph, int graphIndex, float audioVal, float timeStamp)
+    int counter2 = 0;
+    public LineChart updateSingleSeriesGraph(LineChart graph, int graphIndex, List<Integer> audioVals, List<Float> timeStamps)
     {
-        LineData data = graph.getData();
-        String graphInput = null;
+        try {
+            LineData data = graph.getData();
+            String graphInput = null;
 
-        if(data != null)
-        {
-            ILineDataSet set = data.getDataSetByIndex(0);
+            if (data != null) {
+                ILineDataSet set = data.getDataSetByIndex(0);
 
-            if(set == null)
-            {
-                if(graphIndex == 0)
-                {
-                    graphInput = "Audio Levels";
+                if (set == null) {
+                    if (graphIndex == 0) {
+                        graphInput = "Audio Levels";
+                    }
+                    set = createSet(Color.CYAN, graphInput);
+                    data.addDataSet(set);
                 }
-                set = createSet(Color.CYAN, graphInput);
-                data.addDataSet(set);
+
+
+                for (int i = 0; i < audioVals.size(); i++) {
+                    data.addEntry(new Entry(timeStamps.get(i), audioVals.get(i)), 0);
+                }
+
+                //data.notifyDataChanged();
+                graph.notifyDataSetChanged();
+                graph.setVisibleXRangeMaximum(5);
+                graph.moveViewToX(data.getEntryCount());
             }
-
-            data.addEntry(new Entry(timeStamp, audioVal), 0);
-            data.notifyDataChanged();
-
-            graph.notifyDataSetChanged();
-            graph.setVisibleXRangeMaximum(30);
-            graph.moveViewToX(data.getEntryCount());
+        }
+        catch(Exception e)
+        {
+            Log.e("Graph Update: ", "Likely updating too quickly");
         }
         return graph;
     }
@@ -238,6 +248,28 @@ class AudioPercentageFormatter implements IAxisValueFormatter {
     }
 }
 
+//https://github.com/PhilJay/MPAndroidChart/wiki/The-AxisValueFormatter-interface
+//^Accessed: 04/04/2017 @ 06:30
+class RadiansPerSecondFormatter implements IAxisValueFormatter
+{
+    private DecimalFormat mFormat;
+
+    public RadiansPerSecondFormatter() {
+        mFormat = new DecimalFormat("###,###,##0.0"); // use one decimal
+    }
+
+
+    @Override
+    public String getFormattedValue(float value, AxisBase axis) {
+        if (value != 0) {
+            if (value > 0) {
+                return "rad/s " + mFormat.format(value);
+            }
+            return "rad/s " + mFormat.format(value);
+        }
+        return mFormat.format(value);
+    }
+}
 
 //https://github.com/PhilJay/MPAndroidChart/wiki/The-AxisValueFormatter-interface
 //^Accessed: 04/04/2017 @ 06:30
@@ -255,9 +287,9 @@ class MetresSecondSquaredFormatter implements IAxisValueFormatter
     public String getFormattedValue(float value, AxisBase axis) {
         if (value != 0) {
             if (value > 0) {
-                return "m/s  " + mFormat.format(value);
+                return "m/" + "s\u00B2 " + mFormat.format(value);
             }
-            return "m/s " + mFormat.format(value);
+            return "m/" + "s\u00B2 " + mFormat.format(value);
         }
         return mFormat.format(value);
     }

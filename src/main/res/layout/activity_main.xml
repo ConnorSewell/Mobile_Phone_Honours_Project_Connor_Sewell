@@ -2,69 +2,68 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:fillViewport="true"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/activity_main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:screenOrientation="landscape"
+        android:layout_height="wrap_content"
+        android:screenOrientation="portrait"
         android:background="#000000"
+        android:orientation="vertical"
         tools:context="com.example.testproject.mobile_phone_honours_project_connor_sewell.MainActivity">
 
         <android.support.v7.widget.Toolbar
             android:layout_width="match_parent"
             android:background="?attr/colorPrimary"
             android:theme="?attr/actionBarTheme"
-            android:layout_height="@dimen/_45sdp"
+            android:layout_height="?actionBarSize"
             android:layout_alignParentLeft="true"
             android:layout_marginTop="0dp"
             android:id="@+id/toolbar"
             app:theme="@style/ThemeOverlay.AppCompat.Dark"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
-
-
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:titleTextAppearance="@style/TopBarText">
         </android.support.v7.widget.Toolbar>
 
 
-        <com.github.mikephil.charting.charts.LineChart
-            android:layout_width="fill_parent"
-            android:layout_height="@dimen/_102sdp"
-            android:id="@+id/gyroscope_lineGraph"
-            android:layout_marginTop="0dp"
-            android:layout_below="@+id/accelerometer_lineGraph"
-            android:layout_alignParentEnd="true">
-        </com.github.mikephil.charting.charts.LineChart>
-
-        <com.github.mikephil.charting.charts.LineChart
-            android:layout_width="fill_parent"
-            android:layout_height="@dimen/_102sdp"
-            android:id="@+id/accelerometer_lineGraph"
-            android:layout_below="@+id/image_view"
+        <ImageView
+            android:id="@+id/image_view"
+            android:layout_width="@dimen/_210sdp"
+            android:layout_height="@dimen/_140sdp"
             android:layout_marginTop="@dimen/_5sdp"
-            android:layout_alignParentEnd="true">
-        </com.github.mikephil.charting.charts.LineChart>
+            android:layout_below="@+id/toolbar"
+            android:layout_centerHorizontal="true"
+            />
 
         <com.github.mikephil.charting.charts.LineChart
-            android:layout_width="fill_parent"
-            android:layout_height="@dimen/_102sdp"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_95sdp"
+            android:id="@+id/gyroscope_lineGraph"
+            android:layout_below="@+id/accelerometer_lineGraph"
+            >
+        </com.github.mikephil.charting.charts.LineChart>
+
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_95sdp"
             android:id="@+id/audioData_lineGraph"
-            android:layout_marginTop="0dp"
             android:layout_below="@+id/gyroscope_lineGraph"
             android:layout_alignParentEnd="true">
         </com.github.mikephil.charting.charts.LineChart>
 
-        <ImageView
-            android:id="@+id/image_view"
-            android:layout_width="@dimen/_182sdp"
-            android:layout_height="@dimen/_146sdp"
-            android:layout_weight="1"
-            android:layout_marginTop="@dimen/_5sdp"
-            android:layout_centerInParent="true"
-            android:layout_below="@+id/toolbar"
+        <com.github.mikephil.charting.charts.LineChart
+            android:layout_below="@+id/image_view"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_95sdp"
+            android:id="@+id/accelerometer_lineGraph"
+            >
+        </com.github.mikephil.charting.charts.LineChart>
 
-            />
+
 
     </RelativeLayout>
 </ScrollView>

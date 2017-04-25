@@ -9,6 +9,7 @@ import android.widget.VideoView;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
@@ -79,7 +80,7 @@ public class AudioStreamHandler implements Runnable
                     audioTrack.write(audioData, 0, 7104);
                 }
             }
-        } catch (Exception e)
+        } catch (IOException e)
         {
             Log.e(TAG, e.toString());
         }

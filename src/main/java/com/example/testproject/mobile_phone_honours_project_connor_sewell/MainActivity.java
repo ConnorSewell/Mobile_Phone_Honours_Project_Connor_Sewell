@@ -40,6 +40,7 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.widget.AbsoluteLayout;
 import android.widget.Button;
@@ -71,14 +72,17 @@ import java.util.TimerTask;
 
 import static android.R.attr.duration;
 import static android.R.id.input;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
 
-/**https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
- *^Used for network related code (WifiP2pManager, Channel, BroadcastReceiver...). Accessed 08/02/2017 @ 14:55
- *
+/**
+ * https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
+ * ^Used for network related code (WifiP2pManager, Channel, BroadcastReceiver...). Accessed 08/02/2017 @ 14:55
+ * <p>
  * https://www.youtube.com/watch?v=a20EchSQgpw Referenced 02/03/2017 @ 02:59
  * ^ AND https://github.com/PhilJay/MPAndroidChart/blob/master/MPChartExample/src/com/xxmassdeveloper/mpchartexample/RealtimeLineChartActivity.java
- *       ^ Referenced 02/03/2017 @ 03:00 used for all graphing code
-*/
+ * ^ Referenced 02/03/2017 @ 03:00 used for all graphing code
+ */
 
 public class MainActivity extends AppCompatActivity
 {
@@ -90,9 +94,9 @@ public class MainActivity extends AppCompatActivity
     List<WifiP2pConfig> configs = new ArrayList<WifiP2pConfig>();
     List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
 
-    LineChart accelerometerLineChart;
-    LineChart gyroscopeLineChart;
-    LineChart audioDataLineChart;
+    public LineChart accelerometerLineChart;
+    public LineChart gyroscopeLineChart;
+    public LineChart audioDataLineChart;
 
     private SurfaceView surfaceView;
     private SurfaceHolder mHolder;
@@ -115,10 +119,15 @@ public class MainActivity extends AppCompatActivity
     Menu menu;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //https://developer.android.com/training/system-ui/navigation.html
+        //^ Accessed: 09/04/2017 @ 02:24. Used to manipulate navigation bar.
+        View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        decorView.setSystemUiVisibility(uiOptions);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -131,12 +140,14 @@ public class MainActivity extends AppCompatActivity
         audioDataLineChart = (LineChart) findViewById(R.id.audioData_lineGraph);
 
         accelerometerLineChart = graphing.setUpGraph(accelerometerLineChart, 0);
-        gyroscopeLineChart = graphing.setUpGraph(gyroscopeLineChart, 0);
-        audioDataLineChart = graphing.setUpGraph(audioDataLineChart, 1);
+        gyroscopeLineChart = graphing.setUpGraph(gyroscopeLineChart, 1);
+        audioDataLineChart = graphing.setUpGraph(audioDataLineChart, 2);
 
         accelerometerLineChart.setBackgroundColor(Color.BLACK);
         gyroscopeLineChart.setBackgroundColor(Color.BLACK);
         audioDataLineChart.setBackgroundColor(Color.BLACK);
+
+        audioDataLineChart.invalidate();
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
@@ -152,25 +163,42 @@ public class MainActivity extends AppCompatActivity
         File mediaStorageDir;
         Time currTime = new Time(Time.getCurrentTimezone());
         currTime.setToNow();
-        mediaStorageDir = new File(Environment.getExternalStorageDirectory() + "/lol");
 
-        //mediaStorageDir = new File(Environment.getExternalStorageDirectory() + "/Sample");
-        if (!mediaStorageDir.exists())
+    }
+
+    int count = 0;
+    public void  notifyConnectionError()
+    {
+        count++;
+        if(count == 1 && streamStarted)
         {
-            if (!mediaStorageDir.mkdirs())
+            stopStreams();
+            if(wifiDirecthostIP != null && wifiState != 1)
             {
-                System.out.println("Failed to create directory...");
+                startStreams(wifiDirecthostIP, 1);
+                menu.getItem(0).setTitle("Stop");
             }
+            else if(wifiIPAddress != null & wifiState != 2)
+            {
+                startStreams(wifiIPAddress, 2);
+                menu.getItem(0).setTitle("Stop");
+            }
+            else
+            {
+                menu.getItem(0).setTitle("Start");
+                Toast.makeText(this, "Error with connection. Ensure IP is correct", Toast.LENGTH_LONG).show();
+            }
+
+            count = 0;
+
         }
 
     }
 
-    public void wifiState(int state)
-    {
+    public void wifiState(int state) {
         wifiState = state;
 
-        if(state == 1)
-        {
+        if (state == 1) {
             Toast.makeText(this, "Valid WiFi Direct Connection", Toast.LENGTH_SHORT).show();
         }
 
@@ -179,61 +207,71 @@ public class MainActivity extends AppCompatActivity
     //https://www.youtube.com/watch?v=EZ-sNN7UWFU
     //^Used for toolbar options. Accessed 09/03/2017 @ 18:00 Also used for menu.xml in menu folder in res folder
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-      if(item.getItemId() == R.id.wifiIPEntry)
-        {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.wifiIPEntry) {
             ipDialogue();
-        }
-        else if(item.getItemId() == R.id.startOption)
-        {
-            if(streamStarted)
+        } else if (item.getItemId() == R.id.startOption) {
+            if (streamStarted)
             {
                 stopStreams();
-            }
-            else {
+                item.setTitle("Start");
+            } else {
                 if (wifiState == 1) {
                     startStreams(wifiDirecthostIP, 0);
-                    menu.getItem(1).setTitle("Stop");
+                    item.setTitle("Stop");
+                    count = 0;
                 } else if (wifiState == 2) {
                     startStreams(wifiIPAddress, 1);
+                    item.setTitle("Stop");
+                    count = 0;
                 } else if (wifiState == 3) {
-                    Toast.makeText(this, "Please connect before continuing... If error persists, please restart connection",
+                    Toast.makeText(this, "Please connect before continuing, and ensure device is streaming... ",
                             Toast.LENGTH_SHORT).show();
                 }
             }
+        } else if (item.getGroupId() == 2) {
+
+            if(item.getItemId() == 0)
+            {
+                infoDialogue();
+            }
+            else if (item.getItemId() == 1)
+            {
+                for (int i = 2; i < sm.size(); i++)
+                {
+                    sm.removeItem(i);
+                }
+                requestPeers(); //192.168.0.3
+            } else {
+                if (streamStarted) {
+                    Toast.makeText(this, "Please stop stream before trying to establish a new connection", Toast.LENGTH_LONG).show();
+                } else {
+                    wifiDirecthostIP = configs.get(item.getItemId() - 2).deviceAddress;
+                    Toast.makeText(this, wifiDirecthostIP, Toast.LENGTH_LONG).show();
+                    mManager.connect(mChannel, configs.get(item.getItemId() - 2), new WifiP2pManager.ActionListener() {
+                        @Override
+                        public void onSuccess() {
+                            Log.i("INFO", "Connection made");
+                            //Toast.makeText(activity, "WiFi direct connection established", Toast.LENGTH_LONG).show();
+
+                        }
+
+                        @Override
+                        public void onFailure(int reason) {
+                            Log.i("INFO", "Failed to connect");
+                            Toast.makeText(activity, "WiFi direct connection failed", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            }
         }
-        else if(item.getGroupId() == 2)
-      {
-          if (item.getItemId() == 0)
-          {
-              requestPeers();
-          } else
-          {
-              mManager.connect(mChannel, configs.get(item.getItemId() - 1), new WifiP2pManager.ActionListener() {
-                  @Override
-                  public void onSuccess()
-                  {
-                      Log.i("INFO", "Connection made");
-                      Toast.makeText(activity, "WiFi direct connection established", Toast.LENGTH_LONG).show();
-                  }
-
-                  @Override
-                  public void onFailure(int reason) {
-                      Log.i("INFO", "Failed to connect");
-                  }
-              });
-
-          }
-      }
 
         return true;
     }
 
     //http://stackoverflow.com/questions/10903754/input-text-dialog-android
-    //^ Used for below method (dialogue box). Accessed: 06/04/2017 @ 18:11
-    private void ipDialogue()
-    {
+    //^ Used for below method (dialogue box). Also used for method after this (infoDialogue) Accessed: 06/04/2017 @ 18:11
+    private void ipDialogue() {
 
         AlertDialog.Builder alertDialogueBuilder = new AlertDialog.Builder(this);
         alertDialogueBuilder.setTitle("Enter IP address of device on WiFi network");
@@ -243,8 +281,7 @@ public class MainActivity extends AppCompatActivity
 
         alertDialogueBuilder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
+            public void onClick(DialogInterface dialog, int which) {
                 wifiIPAddress = inputArea.getText().toString();
                 wifiState = 2;
             }
@@ -259,11 +296,34 @@ public class MainActivity extends AppCompatActivity
         alertDialogueBuilder.show();
     }
 
+    private void infoDialogue()
+    {
+        AlertDialog.Builder alertDialogueBuilder = new AlertDialog.Builder(this);
+        alertDialogueBuilder.setTitle("WiFi Direct Issues");
+
+        alertDialogueBuilder.setMessage("WiFi Direct can come with issues relating to initial connection - " +
+                "sometimes the connection will fail. Howevever, you will not be given an indicator that it has failed. " +
+                "If you wish to use WiFi Direct (it is very fast!), and it is taking a while to connect then it will " +
+                "likely never connect. To resolve this go into your device settings, and cancel the invite, then go " +
+                "back to the application and retry. Do not accept any request from the other device (it may send one back). " +
+                "This device MUST initialise connection. The app will notify you if a connection is established. " +
+                "Other issues may occur. Usually, the quick fix is to disable, and then re-enable Wi-Fi Direct on the smart glasses.");
+
+        alertDialogueBuilder.setPositiveButton("Ok",
+                new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        alertDialogueBuilder.show();
+    }
+
 
     boolean setup = false;
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.menu, menu);
         this.menu = menu;
@@ -276,23 +336,19 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void changeButtonStates()
-    {
+    public void changeButtonStates() {
         menu.getItem(1).setEnabled(!menu.getItem(1).isEnabled());
         menu.getItem(2).setEnabled(!menu.getItem(2).isEnabled());
 
-        if(menu.getItem(2).isEnabled())
-        {
-            for(int i = 1; i < sm.size(); i++)
-            {
+        if (menu.getItem(2).isEnabled()) {
+            for (int i = 1; i < sm.size(); i++) {
                 sm.removeItem(i);
             }
             requestPeers();
         }
     }
 
-    private void requestPeers()
-    {
+    private void requestPeers() {
         mManager.requestPeers(mChannel, peerListListener);
     }
 
@@ -304,10 +360,13 @@ public class MainActivity extends AppCompatActivity
     Thread videoSendReceiveThread;
     Thread accelerometerSendReceiveThread;
     Thread gyroscopeSendReceiveThread;
-    Thread audioLevelSendReceiveThread
+    Thread audioLevelSendReceiveThread;
 
     private void startStreams(String IP, int connectionType)
     {
+
+        streamStarted = true;
+
         ds = new VideoStreamHandler(IP, activity);
         videoSendReceiveThread = new Thread(ds, "Thread: Video");
         videoSendReceiveThread.start();
@@ -324,7 +383,6 @@ public class MainActivity extends AppCompatActivity
         audioLevelSendReceiveThread = new Thread(alsh, "Thread: Audio Level");
         audioLevelSendReceiveThread.start();
 
-        streamStarted = true;
         //AudioStreamHandler audioSH = new AudioStreamHandler(hostIP, activity);
         //Thread audioReceiveThread = new Thread(audioSH, "Thread: Audio");
         //audioReceiveThread.start();
@@ -347,35 +405,40 @@ public class MainActivity extends AppCompatActivity
         audioLevelSendReceiveThread.interrupt();
         audioLevelSendReceiveThread = null;
 
+        accelerometerLineChart.clearValues();
+        gyroscopeLineChart.clearValues();
+        audioDataLineChart.clearValues();
+
         ds.closeSocket();
         ash.closeSocket();
         alsh.closeSocket();
         gsh.closeSocket();
+
+        ds = null;
+        ash = null;
+        alsh = null;
+        gsh = null;
     }
 
-    private void getWiFiGroupOwnerIP()
-    {
+    public void getWiFiGroupOwnerIP() {
         //started = true;
         Log.e("Inside Netowrk info, ", "...");
         mManager.requestConnectionInfo(mChannel,
-                new WifiP2pManager.ConnectionInfoListener()
-                {
+                new WifiP2pManager.ConnectionInfoListener() {
                     @Override
                     public void onConnectionInfoAvailable(WifiP2pInfo info)
                     {
                         InetAddress groupOwnerAddress = info.groupOwnerAddress;
                         wifiDirecthostIP = groupOwnerAddress.getHostAddress();
+                        System.out.println("Host: " + wifiDirecthostIP);
                     }
                 });
     }
 
-    private void connectDevices()
-    {
-        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()
-        {
+    private void connectDevices() {
+        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
             @Override
-            public void onSuccess()
-            {
+            public void onSuccess() {
                 Log.i("INFO", "Connection made");
             }
 
@@ -390,84 +453,109 @@ public class MainActivity extends AppCompatActivity
     int i;
     int deviceCount;
 
-       private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
-            @Override
-            public void onPeersAvailable(WifiP2pDeviceList peerList) {
-                configs.clear();
-                peers.clear();
-                peers.addAll(peerList.getDeviceList());
+    private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
+        @Override
+        public void onPeersAvailable(WifiP2pDeviceList peerList) {
+            configs.clear();
+            peers.clear();
+            peers.addAll(peerList.getDeviceList());
 
-                for (i = 0; i < peerList.getDeviceList().size(); i++)
-                {
-                        WifiP2pConfig config = new WifiP2pConfig();
-                        WifiP2pDevice device = peers.get(i);
-                        config.deviceAddress = device.deviceAddress;
-                        config.groupOwnerIntent = 0; //0~15...
-                        config.wps.setup = WpsInfo.PBC;
-                        configs.add(config);
+            for (i = 0; i < peerList.getDeviceList().size(); i++) {
+                WifiP2pConfig config = new WifiP2pConfig();
+                WifiP2pDevice device = peers.get(i);
+                config.deviceAddress = device.deviceAddress;
+                config.groupOwnerIntent = 0; //0~15...
+                config.wps.setup = WpsInfo.PBC;
+                configs.add(config);
 
-                        System.out.println("Size: " + configs.size());
-                        runOnUiThread(
-                                new Runnable()
-                        {
+                System.out.println("Size: " + configs.size());
+                runOnUiThread(
+                        new Runnable() {
                             @Override
-                            public void run()
-                            {
-                                sm.add(2, sm.size(), 0, peers.get(sm.size() - 1).deviceName);
+                            public void run() {
+                                sm.add(2, sm.size(), 0, peers.get(i).deviceName);
 
                             }
                         });
 
-                        deviceCount++;
+                deviceCount++;
 
-                }
-                if (peers.size() == 0)
-                {
-                    Log.i("Info...", "No devices found");
-                    return;
-                }
-               }};
+            }
+            if (peers.size() == 0) {
+                Log.i("Info...", "No devices found");
+                return;
+            }
+
+
+        }
+    };
 
 
     public void updateAccelerometer(LineChart accelerometerLineChart)
     {
-        this.accelerometerLineChart = accelerometerLineChart;
+        try
+        {
+            this.accelerometerLineChart = accelerometerLineChart;
+        }
+        catch(Exception e)
+        {
+            Log.e("MainActivity", e.toString());
+        }
     }
 
-    public void updateGyroscope(LineChart gyroscopeLineChart)
+    public void updateGyroscope(LineChart gyroscopeLineChart) {
+        try
+        {
+            this.gyroscopeLineChart = gyroscopeLineChart;
+        }
+        catch(Exception e)
+        {
+            Log.e("MainActivity", e.toString());
+        }
+    }
+
+    public void updateAudioLevel(LineChart audioDataLineChart) {
+        try
+        {
+            this.audioDataLineChart = audioDataLineChart;
+        }
+        catch(Exception e)
+        {
+            Log.e("MainActivity", e.toString());
+        }
+    }
+
+    public void setImage(byte[] imgBytes, int length)
     {
-        this.gyroscopeLineChart = gyroscopeLineChart;
+        try
+        {
+            Bitmap bmp = BitmapFactory.decodeByteArray(imgBytes, 0, length);
+            iv.setImageBitmap(Bitmap.createScaledBitmap(bmp, iv.getWidth(), iv.getHeight(), false));
+        }
+        catch(Exception e)
+        {
+            Log.e("Main: ", "Failed to update image view");
+        }
     }
 
-    public void updateAudioLevel(LineChart audioDataLineChart)
+    public void updateGPS()
     {
-        this.audioDataLineChart = audioDataLineChart;
-    }
 
-    public void setImage(byte[] imgBytes)
-    {
-        Bitmap bmp = BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
-        iv.setImageBitmap(Bitmap.createScaledBitmap(bmp, iv.getWidth(), iv.getHeight(), false));
     }
-
-    public void updateGPS(){}
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         registerReceiver(mReceiver, mIntentFilter);
     }
 
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         unregisterReceiver(mReceiver);
     }
 
-    public void setOptionWriter(PrintWriter out)
-    {
+    public void setOptionWriter(PrintWriter out) {
         this.optionWriter = out;
     }
 }

@@ -105,6 +105,7 @@ public class NetworkManager extends BroadcastReceiver
             {
                 devicesConnected = true;
                 mActivity.wifiState(1);
+                mActivity.getWiFiGroupOwnerIP();
             }
             else
             {

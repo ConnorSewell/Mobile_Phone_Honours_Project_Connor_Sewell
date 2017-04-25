@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Connor on 09/03/2017.
@@ -49,7 +51,7 @@ public class GyroscopeStreamHandler implements Runnable
 
 
     BufferedReader is;
-    float valCounter = 15;
+    float valCounter = 10;
     int counter = 0;
     @Override
     public void run()
@@ -60,50 +62,43 @@ public class GyroscopeStreamHandler implements Runnable
             socket.connect((new InetSocketAddress(ip, 4444)), 10000);
             is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             Log.i(TAG, " Connected to server...");
-            String line = is.readLine();
 
-            float accumulatedX = 0, accumulatedY = 0, accumulatedZ = 0, accumulatedTimestamp = 0;
-            float x = 0, y = 0, z = 0;
-            long timestamp = 0;
+            List<Float> xVals = new ArrayList<Float>();
+            List<Float> yVals = new ArrayList<Float>();
+            List<Float> zVals = new ArrayList<Float>();
+            List<Float> timeStamps = new ArrayList<Float>();
 
-            while(true)
+            String line = null;
+
+            while(true && !socket.isClosed())
             {
                 line = is.readLine();
                 String[] sensorVals = line.split(",");
-                x = Float.parseFloat(sensorVals[0]);
-                y = Float.parseFloat(sensorVals[1]);
-                z = Float.parseFloat(sensorVals[2]);
-                timestamp = Long.parseLong(sensorVals[3]);
+                xVals.add(Float.parseFloat(sensorVals[0]));
+                yVals.add(Float.parseFloat(sensorVals[1]));
+                zVals.add(Float.parseFloat(sensorVals[2]));
+                timeStamps.add(Float.parseFloat(sensorVals[3])/1000000000);
                 counter++;
 
-                System.out.println("x : " + x);
-                System.out.println("y : " + y);
-                System.out.println("z : " + z);
-
-                accumulatedX+=x;
-                accumulatedY+=y;
-                accumulatedZ+=z;
-                accumulatedTimestamp+=timestamp;
 
                 if(counter == valCounter)
                 {
-                    float averagedX = accumulatedX/15.f;
-                    float averagedY = accumulatedY/15.f;
-                    float averagedZ = accumulatedZ/15.f;
-                    float averagedTimestamp = (accumulatedTimestamp/15.f)/1000000000;
-                    gyroscopeLineChart = graphing.update3SeriesGraph(averagedX, averagedY, averagedZ, averagedTimestamp, gyroscopeLineChart, 1);
+                    gyroscopeLineChart = graphing.update3SeriesGraph(xVals, yVals, zVals, timeStamps, gyroscopeLineChart, 1);
                     activity.updateGyroscope(gyroscopeLineChart);
-                    accumulatedX = 0;
-                    accumulatedY = 0;
-                    accumulatedZ = 0;
-                    accumulatedTimestamp = 0;
                     counter = 0;
+                    xVals.clear();
+                    yVals.clear();
+                    zVals.clear();
+                    timeStamps.clear();
                 }
 
             }
-        } catch (Exception e)
+        } catch (IOException e)
         {
             Log.e(TAG, e.toString());
+            //activity.notifyConnectionError();
+
+            //closeSocket();
         }
     }
 }

@@ -6,10 +6,15 @@ import android.widget.VideoView;
 import com.github.mikephil.charting.charts.LineChart;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Created by Connor on 28/03/2017.
@@ -29,6 +34,7 @@ public class AudioLevelStreamHandler implements Runnable
     private Graphing graphing;
     private int valsPerSec = 5;
     private int valCounter = 10;
+
 
     public AudioLevelStreamHandler(String ip, MainActivity activity, LineChart audioLevelLineChart)
     {
@@ -51,12 +57,8 @@ public class AudioLevelStreamHandler implements Runnable
         }
     }
 
-    public void setValsPerSec(int valsPerSec)
-    {
-
-    }
-
     BufferedReader is;
+    InputStream in;
     @Override
     public void run()
     {
@@ -65,46 +67,48 @@ public class AudioLevelStreamHandler implements Runnable
             socket.bind(null);
             socket.connect((new InetSocketAddress(ip, 1111)), 10000);
             is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String line = null;
             Log.i(TAG, "Connected to server...");
 
-            int audioVal = 0; long timestamp = 0;
-            float audioValAccumulator = 0; long timeStampAccumulator = 0;
-
+            String line = null;
             int counter = 0;
-            int valsReceived = 0;
+            int audioVal;
+            long timestamp;
+            float audioValAccumulator = 0;
+            float timeStampAccumulator = 0;
 
             audioLevelLineChart = graphing.updateYAxisLabels(audioLevelLineChart, 2, 0, 32767, true);
 
-            while(true)
+            List<Integer> audioVals = new ArrayList<Integer>();
+            List<Float> timestamps = new ArrayList<Float>();
+
+
+            while(true && !socket.isClosed())
             {
                 line = is.readLine();
                 String[] vals = line.split(",");
                 audioVal = Integer.parseInt(vals[0]);
                 timestamp = Long.parseLong(vals[1]);
-                if(audioVal > 0) {
-                    audioValAccumulator += audioVal;
-                    timeStampAccumulator += timestamp;
-                    valsReceived++;
+
+                if(audioVal > 0)
+                {
+                    audioVals.add(audioVal);
+                    timestamps.add((float)timestamp/1000000000);
                 }
                 counter++;
-
                 if(counter == valCounter)
                 {
-                    float averagedAudioVal = audioValAccumulator/valsReceived;
-                    float averagedTimeStamp = (timeStampAccumulator/valsReceived)/1000000000;
-                    audioLevelLineChart = graphing.updateSingleSeriesGraph(audioLevelLineChart, 0, averagedAudioVal, averagedTimeStamp);
+                    audioLevelLineChart = graphing.updateSingleSeriesGraph(audioLevelLineChart, 0, audioVals, timestamps);
                     activity.updateAudioLevel(audioLevelLineChart);
-                    //System.out.println("Averaged was: " + averagedTimeStamp);
-                    audioValAccumulator = 0;
-                    timeStampAccumulator = 0;
                     counter = 0;
-                    valsReceived = 0;
+                    audioVals.clear();
+                    timestamps.clear();
                 }
             }
-        } catch (Exception e)
+        } catch (IOException e)
         {
             Log.e(TAG, e.toString());
+            //activity.notifyConnectionError();
+            //closeSocket();
         }
     }
 }
