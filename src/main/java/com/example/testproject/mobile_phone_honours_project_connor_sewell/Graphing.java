@@ -24,6 +24,7 @@ import java.util.List;
 
 /**
  * Created by Connor on 09/03/2017.
+ * Class used to provide all required graph functionality
  *
  * https://www.youtube.com/watch?v=a20EchSQgpw Referenced 02/03/2017 @ 02:59
  * ^ AND https://github.com/PhilJay/MPAndroidChart/blob/master/MPChartExample/src/com/xxmassdeveloper/mpchartexample/RealtimeLineChartActivity.java
@@ -34,26 +35,21 @@ public class Graphing
 {
     public LineChart setUpGraph(LineChart graph, int type)
     {
-        //graph.setScaleEnabled(true);
         graph.setDragEnabled(true);
-        //graph.setPinchZoom(true);
         graph.setBackgroundColor(Color.GRAY);
         graph.setDescription(null);
         graph.setTag("Accelerometer");
 
         LineData graphData = new LineData();
         graphData.setValueTextColor(Color.WHITE);
-
         graph.setData(graphData);
+
+        graph.setExtraRightOffset(30f);
 
         Legend graphLegend = graph.getLegend();
 
-        graphLegend.setDrawInside(true);
+        //Made my own legend as apparently this legend causes issues
         graphLegend.setEnabled(false);
-        //graphLegend.setForm(Legend.LegendForm.LINE);
-        //graphLegend.setTextColor(Color.WHITE);
-        //graphLegend.setTextSize(7);
-        //graphLegend.setXOffset(0);
 
         XAxis graphAxisX = graph.getXAxis();
         graphAxisX.setXOffset(1);
@@ -62,6 +58,8 @@ public class Graphing
 
         YAxis graphAxisY = graph.getAxisLeft();
         graphAxisY.setTextColor(Color.WHITE);
+
+
 
         if(type == 0)
         {
@@ -81,16 +79,10 @@ public class Graphing
         graphAxisX.setLabelCount(2, true);
         graphAxisX.setValueFormatter(new SecondsFormatter());
 
-        //graphAxisY.setGranularity(2f);
-
         graphAxisY.setGranularityEnabled(false);
         YAxis graphAxisYRight = graph.getAxisRight();
         graphAxisYRight.setEnabled(false);
 
-
-
-        //graph.setVisibleYRangeMaximum(5, YAxis.AxisDependency.LEFT);
-        //graph.setVisibleYRangeMinimum(0, YAxis.AxisDependency.LEFT);
         return graph;
     }
 
@@ -102,12 +94,8 @@ public class Graphing
 
     public LineChart update3SeriesGraph(List<Float> xVals, List<Float> yVals, List<Float> zVals, List<Float> timeStamps, LineChart graph, int graphIndex)
     {
-        try {
-            //String[] values = inputLine.split(",");
-            //x = Float.parseFloat(values[0]);
-            //y = Float.parseFloat(values[1]);
-            //z = Float.parseFloat(values[2]);
-            //time = Long.parseLong(values[3]);
+        try
+        {
             LineData data = graph.getData();
 
             String graphInput = null;
@@ -154,16 +142,17 @@ public class Graphing
                     data.addEntry(new Entry(timeStamps.get(i), zVals.get(i)), 2);
                 }
 
+                //Dynamic removal... Causes issues
+                //if(data.getDataSetByIndex(0).getEntryCount() >= 500)
+                //{
+                //    for(int i = 0; i < 50; i++)
+                //    {
+                //        data.removeEntry(0, 0);
+                //        data.removeEntry(0, 1);
+                //        data.removeEntry(0, 2);
+                //    }
+                //}
 
-                if (counter < 49) {
-                    counter++;
-                }
-
-                if (counter == 49) {
-                    // data.getDataSetByIndex(0).removeFirst();
-                    //data.getDataSetByIndex(1).removeFirst();
-                    //data.getDataSetByIndex(2).removeFirst();
-                }
                 graph.notifyDataSetChanged();
                 graph.setVisibleXRangeMaximum(5);
                 graph.moveViewToX(data.getDataSetByIndex(0).getEntryCount() - 1);
@@ -176,7 +165,7 @@ public class Graphing
         return graph;
     }
 
-    public LineChart updateYAxisLabels(LineChart graph, int labelCount, int min, int max, boolean strictLabel)
+    public LineChart updateYAxisLabels(LineChart graph, int labelCount, float min, float max, boolean strictLabel)
     {
         graph.getAxisLeft().setAxisMaximum(max);
         graph.getAxisLeft().setAxisMinimum(min);
@@ -184,7 +173,6 @@ public class Graphing
         return graph;
     }
 
-    int counter2 = 0;
     public LineChart updateSingleSeriesGraph(LineChart graph, int graphIndex, List<Integer> audioVals, List<Float> timeStamps)
     {
         try {
@@ -203,10 +191,19 @@ public class Graphing
                 }
 
 
-                for (int i = 0; i < audioVals.size(); i++) {
+                for (int i = 0; i < audioVals.size(); i++)
+                {
                     data.addEntry(new Entry(timeStamps.get(i), audioVals.get(i)), 0);
                 }
 
+                //Dynamic removal... Causes issues
+                //if(data.getEntryCount() >= 500)
+                //{
+                //    for(int i = 0; i < 50; i++)
+                //    {
+                //        data.removeEntry(0, 0);
+                //    }
+                //}
                 //data.notifyDataChanged();
                 graph.notifyDataSetChanged();
                 graph.setVisibleXRangeMaximum(5);
@@ -242,7 +239,7 @@ class AudioPercentageFormatter implements IAxisValueFormatter {
             if (value > 0) {
                 return ((double) (value / 32767) * 100 + " %");
             }
-            return ((double) (value / 32768) * 100 + " %");
+            //return ((double) (value / 32768) * 100 + " %");
         }
         return String.valueOf(value);
     }
@@ -255,7 +252,7 @@ class RadiansPerSecondFormatter implements IAxisValueFormatter
     private DecimalFormat mFormat;
 
     public RadiansPerSecondFormatter() {
-        mFormat = new DecimalFormat("###,###,##0.0"); // use one decimal
+        mFormat = new DecimalFormat("###,###,##0.0");
     }
 
 
@@ -263,9 +260,9 @@ class RadiansPerSecondFormatter implements IAxisValueFormatter
     public String getFormattedValue(float value, AxisBase axis) {
         if (value != 0) {
             if (value > 0) {
-                return "rad/s " + mFormat.format(value);
+                return mFormat.format(value) + " rad/s";
             }
-            return "rad/s " + mFormat.format(value);
+            return mFormat.format(value) + " rad/s";
         }
         return mFormat.format(value);
     }
@@ -287,9 +284,9 @@ class MetresSecondSquaredFormatter implements IAxisValueFormatter
     public String getFormattedValue(float value, AxisBase axis) {
         if (value != 0) {
             if (value > 0) {
-                return "m/" + "s\u00B2 " + mFormat.format(value);
+                return mFormat.format(value) + " m/" + "s\u00B2";
             }
-            return "m/" + "s\u00B2 " + mFormat.format(value);
+            return mFormat.format(value) + " m/" + "s\u00B2";
         }
         return mFormat.format(value);
     }

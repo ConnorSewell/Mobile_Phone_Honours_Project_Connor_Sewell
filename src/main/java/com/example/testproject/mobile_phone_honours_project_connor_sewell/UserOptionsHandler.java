@@ -10,6 +10,9 @@ import java.net.Socket;
 
 /**
  * Created by Connor on 08/03/2017.
+ * This class is NOT used. It's intention is to allow the sending of messages to the smart glasses
+ * i.e. could change frame rate by sending a message asking for this to happen
+ *
  * Using: https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
  * ^ For all network related code. Accessed: 10/02/2017 @ 03:00
  */
@@ -38,7 +41,6 @@ public class UserOptionsHandler implements Runnable
         {
             socket.bind(null);
             socket.connect((new InetSocketAddress(ip, 6666)), 10000);
-            Log.i(TAG, "Connected to server...");
             out = new PrintWriter(socket.getOutputStream(), true);
             ma.setOptionWriter(out);
         } catch (Exception e)

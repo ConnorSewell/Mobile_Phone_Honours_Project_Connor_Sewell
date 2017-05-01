@@ -63,32 +63,36 @@
 
         <TextView
             android:id="@+id/accelerometerLegend"
-            android:layout_below="@+id/image_view"
-            android:layout_width="@dimen/_300sdp"
-            android:layout_height="@dimen/_13sdp"
-            android:textSize="@dimen/_9sdp"
+            android:layout_below="@+id/accelerometer_lineGraph"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="13dp"
             android:text="LEGEND TEXT"
-            android:layout_marginTop="@dimen/_82sdp">
+            android:layout_marginTop = "-16dp"
+            >
         </TextView>
 
         <TextView
             android:id="@+id/audioLegend"
-            android:layout_below="@+id/gyroscope_lineGraph"
-            android:layout_width="@dimen/_300sdp"
-            android:layout_height="@dimen/_13sdp"
-            android:textSize="@dimen/_9sdp"
+            android:layout_below="@+id/audioData_lineGraph"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13dp"
             android:text="LEGEND TEXT"
-            android:layout_marginTop="@dimen/_82sdp">
+            android:gravity="center"
+            android:layout_marginTop="-16dp">
         </TextView>
 
         <TextView
             android:id="@+id/gyroscopeLegend"
-            android:layout_below="@+id/accelerometer_lineGraph"
-            android:layout_width="@dimen/_300sdp"
-            android:layout_height="@dimen/_13sdp"
-            android:textSize="@dimen/_9sdp"
+            android:layout_below="@+id/gyroscope_lineGraph"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13dp"
             android:text="LEGEND TEXT"
-            android:layout_marginTop="@dimen/_82sdp">
+            android:gravity="center"
+            android:layout_marginTop="-16dp">
         </TextView>
 
 

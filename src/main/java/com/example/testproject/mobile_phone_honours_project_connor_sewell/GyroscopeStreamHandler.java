@@ -51,7 +51,7 @@ public class GyroscopeStreamHandler implements Runnable
 
 
     BufferedReader is;
-    float valCounter = 10;
+    float valCounter = 7;
     int counter = 0;
     @Override
     public void run()
@@ -69,6 +69,8 @@ public class GyroscopeStreamHandler implements Runnable
             List<Float> timeStamps = new ArrayList<Float>();
 
             String line = null;
+
+            gyroscopeLineChart = graphing.updateYAxisLabels(gyroscopeLineChart, 3, -1.8f, 1.8f, true);
 
             while(true && !socket.isClosed())
             {
@@ -97,7 +99,6 @@ public class GyroscopeStreamHandler implements Runnable
         {
             Log.e(TAG, e.toString());
             //activity.notifyConnectionError();
-
             //closeSocket();
         }
     }

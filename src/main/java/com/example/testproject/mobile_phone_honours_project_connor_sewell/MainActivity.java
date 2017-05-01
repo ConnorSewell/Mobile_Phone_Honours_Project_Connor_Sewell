@@ -125,12 +125,10 @@ public class MainActivity extends AppCompatActivity
     Menu menu;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        TextView legendText;
-
         //https://developer.android.com/training/system-ui/navigation.html
         //^ Accessed: 09/04/2017 @ 02:24. Used to manipulate navigation bar.
         View decorView = getWindow().getDecorView();
@@ -154,9 +152,26 @@ public class MainActivity extends AppCompatActivity
         accelerometerLineChart.setBackgroundColor(Color.BLACK);
         gyroscopeLineChart.setBackgroundColor(Color.BLACK);
         audioDataLineChart.setBackgroundColor(Color.BLACK);
-        audioDataLineChart.invalidate();
+        //audioDataLineChart.invalidate();
 
+        manualLegendSetUp();
 
+        mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        mChannel = mManager.initialize(this, getMainLooper(), null);
+        mReceiver = new NetworkManager(mManager, mChannel, this);
+
+        mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
+
+    }
+
+    public void manualLegendSetUp()
+    {
+        TextView legendText;
         legendText = (TextView) findViewById(R.id.audioLegend);
         legendText.setText("Audio Data");
         legendText.setTextColor(Color.CYAN);
@@ -179,22 +194,6 @@ public class MainActivity extends AppCompatActivity
         sb.setSpan(green, 30, 41, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
         legendText = (TextView) findViewById(R.id.gyroscopeLegend);
         legendText.setText(sb);
-
-        mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        mChannel = mManager.initialize(this, getMainLooper(), null);
-        mReceiver = new NetworkManager(mManager, mChannel, this);
-
-        mIntentFilter = new IntentFilter();
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.EXTRA_NETWORK_INFO);
-
-        File mediaStorageDir;
-        Time currTime = new Time(Time.getCurrentTimezone());
-        currTime.setToNow();
-
     }
 
     int count = 0;
@@ -219,9 +218,7 @@ public class MainActivity extends AppCompatActivity
                 menu.getItem(0).setTitle("Start");
                 Toast.makeText(this, "Error with connection. Ensure IP is correct", Toast.LENGTH_LONG).show();
             }
-
             count = 0;
-
         }
 
     }
@@ -278,7 +275,6 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(this, "Please stop stream before trying to establish a new connection", Toast.LENGTH_LONG).show();
                 } else {
                     wifiDirecthostIP = configs.get(item.getItemId() - 2).deviceAddress;
-                    Toast.makeText(this, wifiDirecthostIP, Toast.LENGTH_LONG).show();
                     mManager.connect(mChannel, configs.get(item.getItemId() - 2), new WifiP2pManager.ActionListener() {
                         @Override
                         public void onSuccess() {
@@ -338,6 +334,8 @@ public class MainActivity extends AppCompatActivity
                 "likely never connect. To resolve this go into your device settings, and cancel the invite, then go " +
                 "back to the application and retry. Do not accept any request from the other device (it may send one back). " +
                 "This device MUST initialise connection. The app will notify you if a connection is established. " +
+                "If you cannot find the device in the list after clicking rediscover, and the Wi-Fi Direct is enabled on " +
+                "the smart glasses, then restarting the application and trying again may resolve the problem. " +
                 "Other issues may occur. Usually, the quick fix is to disable, and then re-enable Wi-Fi Direct on the smart glasses.");
 
         alertDialogueBuilder.setPositiveButton("Ok",
@@ -395,7 +393,6 @@ public class MainActivity extends AppCompatActivity
 
     private void startStreams(String IP, int connectionType)
     {
-
         streamStarted = true;
 
         ds = new VideoStreamHandler(IP, activity);
@@ -413,10 +410,6 @@ public class MainActivity extends AppCompatActivity
         alsh = new AudioLevelStreamHandler(IP, activity, audioDataLineChart);
         audioLevelSendReceiveThread = new Thread(alsh, "Thread: Audio Level");
         audioLevelSendReceiveThread.start();
-
-        //AudioStreamHandler audioSH = new AudioStreamHandler(hostIP, activity);
-        //Thread audioReceiveThread = new Thread(audioSH, "Thread: Audio");
-        //audioReceiveThread.start();
 
     }
 
@@ -436,10 +429,6 @@ public class MainActivity extends AppCompatActivity
         audioLevelSendReceiveThread.interrupt();
         audioLevelSendReceiveThread = null;
 
-        accelerometerLineChart.clearValues();
-        gyroscopeLineChart.clearValues();
-        audioDataLineChart.clearValues();
-
         ds.closeSocket();
         ash.closeSocket();
         alsh.closeSocket();
@@ -452,8 +441,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void getWiFiGroupOwnerIP() {
-        //started = true;
-        Log.e("Inside Netowrk info, ", "...");
+
         mManager.requestConnectionInfo(mChannel,
                 new WifiP2pManager.ConnectionInfoListener() {
                     @Override
@@ -520,7 +508,6 @@ public class MainActivity extends AppCompatActivity
 
         }
     };
-
 
     public void updateAccelerometer(LineChart accelerometerLineChart)
     {

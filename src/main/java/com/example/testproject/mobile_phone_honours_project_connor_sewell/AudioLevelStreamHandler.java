@@ -18,6 +18,8 @@ import java.util.Random;
 
 /**
  * Created by Connor on 28/03/2017.
+ * Class handles the receiving, and usage of audio amplitude data
+ *
  * Using: https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
  * ^ For all network related code. Accessed: 10/02/2017 @ 03:00
  */
@@ -33,7 +35,7 @@ public class AudioLevelStreamHandler implements Runnable
     private String TAG = "ALStreamHandler: ";
     private Graphing graphing;
     private int valsPerSec = 5;
-    private int valCounter = 10;
+    private int valCounter = 7;
 
 
     public AudioLevelStreamHandler(String ip, MainActivity activity, LineChart audioLevelLineChart)
@@ -73,9 +75,17 @@ public class AudioLevelStreamHandler implements Runnable
             int counter = 0;
             int audioVal;
             long timestamp;
-            float audioValAccumulator = 0;
-            float timeStampAccumulator = 0;
 
+            if(audioLevelLineChart.getData().getEntryCount()!=0)
+            {
+                activity.runOnUiThread(new Runnable()
+                {
+                    public void run()
+                    {
+                        audioLevelLineChart.clearValues();
+                    }
+                });
+            }
             audioLevelLineChart = graphing.updateYAxisLabels(audioLevelLineChart, 2, 0, 32767, true);
 
             List<Integer> audioVals = new ArrayList<Integer>();
@@ -107,8 +117,6 @@ public class AudioLevelStreamHandler implements Runnable
         } catch (IOException e)
         {
             Log.e(TAG, e.toString());
-            //activity.notifyConnectionError();
-            //closeSocket();
         }
     }
 }

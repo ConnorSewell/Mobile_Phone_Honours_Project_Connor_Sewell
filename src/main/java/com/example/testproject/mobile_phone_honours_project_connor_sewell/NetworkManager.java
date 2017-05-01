@@ -22,6 +22,8 @@ import java.util.List;
 
 /**
  * Created by Connor on 18/02/2017.
+ * Broadcast receiver for Wi-Fi P2P
+ *
  * Majority of class code taken from: https://developer.android.com/guide/topics/connectivity/wifip2p.html
  * ^ Accessed 08/02/2017 @ 14:55
  */
@@ -47,7 +49,6 @@ public class NetworkManager extends BroadcastReceiver
         this.mManager = manager;
         this.mChannel = channel;
         this.mActivity = mActivity;
-        this.connectBtn = connectBtn;
 
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener()
         {
@@ -87,17 +88,7 @@ public class NetworkManager extends BroadcastReceiver
         }
         else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action))
         {
-            //if(networkInfo !=null)
-           // {
-           //     if (!networkInfo.isConnected()) {
-           //         mManager.requestPeers(mChannel, peerListListener);
-           //     }
-           // }
 
-           // if(networkInfo == null)
-           // {
-           //     mManager.requestPeers(mChannel, peerListListener);
-           // }
         }
         else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action))
         {
@@ -124,100 +115,4 @@ public class NetworkManager extends BroadcastReceiver
             }
         }
 
-
-    /**
-    private void startStreams()
-    {
-        //started = true;
-        Log.e("Inside Netowrk info, ", "...");
-        mManager.requestConnectionInfo(mChannel,
-                new WifiP2pManager.ConnectionInfoListener() {
-                    @Override
-                    public void onConnectionInfoAvailable(WifiP2pInfo info)
-                    {
-                        InetAddress groupOwnerAddress = info.groupOwnerAddress;
-                        String hostIP = groupOwnerAddress.getHostAddress();
-                        Log.i(infoLogTag, hostIP);
-
-                        VideoStreamHandler ds = new VideoStreamHandler(hostIP, mActivity);
-                        Thread videoSendReceiveThread = new Thread(ds, "Thread: Video");
-                        videoSendReceiveThread.start();
-
-                        AccelerometerStreamHandler ash = new AccelerometerStreamHandler(hostIP, mActivity);
-                        Thread accelerometerSendReceiveThread = new Thread(ash, "Thread: Accelerometer");
-                        accelerometerSendReceiveThread.start();
-
-                        GyroscopeStreamHandler gsh = new GyroscopeStreamHandler(hostIP, mActivity);
-                        Thread gyroscopeSendReceiveThread = new Thread(gsh, "Thread: Gyroscope");
-                        gyroscopeSendReceiveThread.start();
-
-                    }
-                });
-    }
-     */
-
-    /**
-    private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
-    boolean deviceConnected = false;
-
-    private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
-        @Override
-        public void onPeersAvailable(WifiP2pDeviceList peerList) {
-            if (!deviceConnected)
-            {
-
-                Log.i(infoLogTag, "No of peers: " + String.valueOf(peerList.getDeviceList().size()));
-
-                peers.clear();
-                peers.addAll(peerList.getDeviceList());
-
-                for (int i = 0; i < peerList.getDeviceList().size(); i++) {
-                    if (peers.get(i).deviceName.toString().equals("Android_9c2d")) ;
-                    {
-                        Log.i(infoLogTag + ": Device: ", peers.get(i).deviceName.toString());
-                        Log.i(infoLogTag + ": Address: ", peers.get(i).deviceAddress.toString());
-
-                        WifiP2pDevice device = peers.get(i);
-                        config.deviceAddress = device.deviceAddress;
-                        config.groupOwnerIntent = 0; //0~15...
-                        config.wps.setup = WpsInfo.PBC;
-                        deviceConnected = true;
-
-                        //ConnectToServer cts = new ConnectToServer(mChannel, config);
-                        //connectionThread = new Thread(cts, "Thread One");
-                        //connectionThread.start();
-
-                       }
-                    }
-                }
-
-                if (peers.size() == 0)
-                {
-                    Log.i(infoLogTag, "No devices found");
-                    return;
-                }
-            }
-    };
-     */
-}
-
-
-class ConnectToServer implements Runnable
-{
-    private WifiP2pManager.Channel mChannel;
-    private WifiP2pManager mManager;
-    WifiP2pConfig config = new WifiP2pConfig();
-    NetworkInfo networkInfo = null;
-
-    public ConnectToServer(WifiP2pManager.Channel mChannel, WifiP2pConfig config)
-    {
-        this.mChannel = mChannel;
-        this.config = config;
-    }
-
-    @Override
-    public void run()
-    {
-
-    }
 }

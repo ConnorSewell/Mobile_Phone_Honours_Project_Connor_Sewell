@@ -17,6 +17,8 @@ import java.net.Socket;
 
 /**
  * Created by Connor on 14/03/2017.
+ * This class is NOT used, but is left
+ * in case of future use. It allows the gathering, and playing of incoming audio streams.
  *
  *  Using: https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
  * ^ For all network related code. Accessed: 10/02/2017 @ 03:00
@@ -48,7 +50,7 @@ public class AudioStreamHandler implements Runnable
     public void run()
     {
         //http://stackoverflow.com/questions/2878867/how-to-send-an-array-of-bytes-over-a-tcp-connection-java-programming
-        //Method of sending byte stream through socket taken from above
+        //Method of reading byte array
         //Accessed: 08/03/2017 @ 21:00
         try
         {
@@ -86,8 +88,4 @@ public class AudioStreamHandler implements Runnable
         }
     }
 
-    private void playAudio(byte[] audioData)
-    {
-
-    }
 }

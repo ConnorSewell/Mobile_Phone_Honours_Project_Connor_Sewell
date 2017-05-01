@@ -40,14 +40,14 @@ import static java.lang.System.in;
 
 /**
  * Created by Connor on 18/02/2017.
+ * Class handles the receiving, and usage of video data (frames)
+ *
  * Using: https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
  * ^ For all network related code (sockets). Accessed: 10/02/2017 @ 03:00
  * */
 
 public class VideoStreamHandler implements Runnable
 {
-    //DatagramSocket socket = null;
-    RtpStream stream;
     Socket socket;
     String ip;
     MainActivity activity;
@@ -62,11 +62,10 @@ public class VideoStreamHandler implements Runnable
         {
             socket = new Socket();
             socket.setTcpNoDelay(true);
-            //socket = new DatagramSocket(8888);
-            //socket.setReceiveBufferSize(20000);
         }
         catch(Exception e)
         {
+            Log.e(TAG, "Issues Creating Socket");
         }
     }
 
@@ -82,29 +81,17 @@ public class VideoStreamHandler implements Runnable
         }
     }
 
-
     InputStream is;
     DataInputStream dis;
-    ImageView iv;
-
-    byte[] imageIn = new byte[200000];
-
     Boolean inUse = false;
 
     @Override
-    public void run() {
-        //http://stackoverflow.com/questions/2878867/how-to-send-an-array-of-bytes-over-a-tcp-connection-java-programming
-        //Method of sending byte stream through socket taken from above
-        //Accessed: 08/03/2017 @ 21:00
-
+    public void run()
+    {
         InetAddress ipAddress = null;
 
         try
         {
-            //byte[] emptyMessage = new byte[1];
-            //ipAddress = InetAddress.getByName(ip);
-            //DatagramPacket sendPacket = new DatagramPacket(emptyMessage, emptyMessage.length, ipAddress, 8888);
-            //socket.send(sendPacket);
             socket.bind(null);
             socket.connect((new InetSocketAddress(ip, 8888)), 10000);
             socket.setSoTimeout(5000);
@@ -112,73 +99,45 @@ public class VideoStreamHandler implements Runnable
             socket.setTcpNoDelay(true);
             is = socket.getInputStream();
             dis = new DataInputStream(new BufferedInputStream(is));
-        } catch (Exception e) {
-            System.out.println("Could not convert...");
+        } catch (Exception e)
+        {
+            Log.e(TAG, e.toString());
+            //closeSocket();
+
         }
 
         while(true && !socket.isClosed())
         {
             try
             {
+                //http://stackoverflow.com/questions/2878867/how-to-send-an-array-of-bytes-over-a-tcp-connection-java-programming
+                //Method of reading byte array
+                //Accessed: 08/03/2017 @ 21:00
                 int len = dis.readInt();
-                //System.out.println("Length: " + len);
-                byte[] imageData = new byte[len];
+                final byte[] imageData = new byte[len];
                 if (len > 0)
                 {
                     dis.readFully(imageData);
-                    if(!inUse) {
+                    if(!inUse)
+                    {
                         inUse = true;
-                        setImage(imageData, imageData.length);
+                        activity.runOnUiThread(new Runnable()
+                        {
+                            public void run()
+                            {
+                                activity.setImage(imageData, imageData.length);
+                                inUse = false;
+                            }
+                        });
                     }
                 }
-
-                //DatagramPacket packet = new DatagramPacket(imageIn, imageIn.length);
-                //socket.receive(packet);
-                //byte[] values = packet.getData();
-                //setImage(values, values.length);
-                //System.out.println("Got in");
-                //for(int i = 0; i < receive.length; i++)
-                //{
-                //    System.out.println(receive[i]);
-                //}
             }
             catch(Exception e)
             {
-                System.out.println("Failed here");
+                Log.e(TAG, e.toString());
             }
         }
-
     }
-
-
-
-
-       // try
-      //  {
-         //   socket.bind(null);
-         //   socket.setTcpNoDelay(true);
-         //   socket.connect((new InetSocketAddress(ip, 8888)), 10000);
-         //   is = socket.getInputStream();
-         //   is.read();
-         //   dis = new DataInputStream(is);
-          //  while(true)
-          //  {
-          //          int len = is.read();
-          //          byte[] imageData = new byte[len];
-          //          if (len > 0)
-          //          {
-          //              is.read(imageData, 0, len);
-                        //dis.readFully(imageData);
-          //              setImage(imageData);
-          //          }
-          //  }
-        //} catch (IOException e)
-       // {
-       //     Log.e(TAG, e.toString());
-            //activity.notifyConnectionError();
-            //closeSocket();
-        //}
-    //}
 
     public void setImage(final byte[] imageBytes, final int length)
     {

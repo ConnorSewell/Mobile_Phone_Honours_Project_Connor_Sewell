@@ -17,6 +17,7 @@ import java.util.List;
 
 /**
  * Created by Connor on 01/03/2017.
+ * Class handles the receiving, and usage of accelerometer data
  *
  * Using: https://developer.android.com/guide/topics/connectivity/wifip2p.html#creating-app
  * ^ For all network related code. Accessed: 10/02/2017 @ 03:00
@@ -54,8 +55,7 @@ public class AccelerometerStreamHandler implements Runnable
     }
 
     BufferedReader is;
-
-    int valCounter = 10;
+    int valCounter = 7;
     int counter = 0;
     @Override
     public void run()
@@ -72,6 +72,8 @@ public class AccelerometerStreamHandler implements Runnable
             List<Float> yVals = new ArrayList<Float>();
             List<Float> zVals = new ArrayList<Float>();
             List<Float> timeStamps = new ArrayList<Float>();
+
+            accelerometerLineChart = graphing.updateYAxisLabels(accelerometerLineChart, 3, -20, 20, true);
 
             while(true && !socket.isClosed())
             {
@@ -98,7 +100,6 @@ public class AccelerometerStreamHandler implements Runnable
         } catch (IOException e)
         {
             Log.e(TAG, e.toString());
-            closeSocket();
             activity.runOnUiThread(new Runnable()
             {
                 public void run()
